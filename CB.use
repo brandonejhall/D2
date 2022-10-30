@@ -1,0 +1,455 @@
+model CB
+
+class Date
+attributes
+    day: Integer init: 1
+    month: Integer init: 1
+    year: Integer init: 1901
+
+operations
+    /** Updates the attribute values */
+    initialise(d: Integer, m: Integer, y: Integer)
+    begin
+        self.day := d;
+        self.month := m;
+        self.year := y;
+    end
+    pre parametersHaveValidValues: isValid(d, m, y)
+    post attributesCorrectlyUpdatedAlt:
+        (if d = day@pre then day = day@pre else day = d endif) and
+            (if m = month@pre then month = month@pre else month = m endif) and
+                (if y = year@pre then year = year@pre else year = y endif)
+
+    /* Accessors */
+    getDay(): Integer = day
+    getMonth(): Integer = month
+    getYear(): Integer = year
+
+    /* Mutators - ***** Fill in your OCL expressions and pre- and
+                post-conditions for these  from the previous Modelling
+                session that asked you to write them. */
+    setDay(d: Integer)
+    setMonth(m: Integer)
+    setYear(y: Integer)
+
+    /** returns true if all the attributes are not null, false otherwise */
+    isInitialised(): Boolean =
+        day <> null and month <> null and year <> null
+
+    /** returns true if self is before d, , false otherwise */
+    before(d: Date): Boolean = true /* ***** Fill in your OCL expression
+                from  the previous Modelling session that asked you
+                to write it. */
+
+    /** returns true if self has the same values as d, false otherwise */
+    equals(d: Date): Boolean = day = d.day and month = d.month and year = d.year
+    pre bothAreInitialised: isInitialised() and d.isInitialised()
+    pre bothAreValid: isValid(day, month, year) and
+        isValid(d.day, d.month, d.year)
+    post returnValueConditions:
+        let
+            s = Set{day = d.day, month = d.month, year = d.month}
+        in
+            result =  s->excludes(false) /* true or flase will be in result */
+
+    /** returns true if self is after d, false otherwise */
+    after(d: Date): Boolean = not equals(d) and not before(d)
+
+    /** returns true if y is a leap year, false otherwise */
+    isLeapYear(y: Integer): Boolean =
+        if (y.mod(400)=0 or (y.mod(100)>0 and y.mod(4)=0))
+        then true
+        else false
+        endif
+    pre yearIsValid: y > 1900
+
+    dayValid(v: Integer): Boolean = v >= 1 and v <= 31
+
+    monthValid(v: Integer): Boolean =  v >= 1 and v <= 12
+
+    yearValid(v: Integer): Boolean = v > 1900
+
+    dayAndMonthValid(d: Integer, m: Integer): Boolean =
+        Set{4, 6, 9, 11}->includes(m) implies d < 31
+
+    febValid(d: Integer, y: Integer): Boolean =
+        (isLeapYear(y) implies d <= 29) and
+            (not isLeapYear(y) implies d <= 28)
+
+    isValid(d: Integer, m: Integer, y: Integer): Boolean =
+         dayValid(d) and monthValid(m) and yearValid(y) and
+            dayAndMonthValid(d, m) and (m = 2 implies febValid(d, y))
+
+constraints
+    inv dayValues: dayValid(day)
+    inv monthValues: monthValid(month)
+    inv yearValues: yearValid(year)
+    inv monthsWith30Days: dayAndMonthValid(day, month)
+    inv inLeapYearFebDaysCorrect: month = 2 implies febValid(day, year)
+end
+
+
+
+class DateTime < Date
+attributes
+    hour: Integer
+    minute: Integer
+    second: Integer
+end
+
+
+class User 
+attributes 
+   name: String
+   userName: String
+   DOB: Date
+   email: String
+   password: String
+   record: Integer derived: 0
+   status: UserStatus
+   friendsList: Set(User) derived: Set{}
+end
+
+class Game < Subject
+attributes
+ gameResult: GameResult
+ time: DateTime
+ gameStatus: GameStatus
+end
+
+class LeaderBoard < Observer
+attributes
+placements: Integer derived:0
+end
+
+
+class Request
+attributes
+    status: RequestStatus
+end
+
+class Blocked
+attributes
+    blocked: Boolean    
+end
+
+class Preference
+attributes 
+    name: String
+    value: String
+end
+
+class RandomMatch
+end
+
+class GameInvite
+attributes 
+    InviteAccepted: Boolean derived: false
+end
+
+
+
+class UserSearch
+attributes
+    UserFound: Boolean derived: false
+end
+
+
+class CheckersBlitz 
+end
+
+class IP 
+attributes
+    IPaddress:String
+end
+
+class Country
+attributes
+    name:String
+end
+
+class Region
+attributes
+    identity:RegionIdentity
+end
+
+class Tournament 
+attributes 
+ nbrOfPlayers: Integer
+ nbrOfMatches: Integer
+ status: TournamentStatus
+ winner: String derived: ''
+end
+
+class Piece
+ attributes
+    colour: Colour
+    patternType: Pattern
+end
+
+class Observer
+end
+
+class Subject
+end
+
+class King < Piece
+end
+
+class MovePattern
+    attributes 
+        patternType: Pattern
+end
+
+class Square
+   attributes
+    shade:Shade
+    column: Column
+    row: Row
+end
+
+class Move
+end
+
+class Board 
+attributes 
+    squares: Integer derived:64
+end 
+
+associationclass Result 
+    between
+    User[2] role users
+    Game[1] role match
+    attributes
+        isWinner:Boolean
+end
+
+
+enum RequestStatus{
+    Accepted,
+    Rejected,
+    AwaitingResponse
+}
+
+
+enum RegionIdentity{
+    NA,SA,ASIA,EUROPE,OCEANIA,CA
+}
+
+enum Colour{
+    Red,
+    White
+}
+
+enum Shade{
+    Red,
+    White
+}
+enum GameStatus{
+    Ongoing,
+    Started,
+    Finished
+}
+
+enum TournamentStatus{
+    Ongoing,
+    Intialized,
+    Finished
+}
+
+enum GameResult{
+    Win /* User has won */,
+    Lose /* User has Lost*/,
+    Draw /* User Draw */
+}
+
+
+enum UserStatus{
+    Available,
+    FriendsOnly,
+    DoNotDisturb
+}
+
+enum Pattern{
+    OneSquareUp,
+    OneSquareAny,
+    OneSquareDiagonally
+}
+
+enum Row{
+    one,two,three,four,five,six,seven,eight
+}
+
+enum Column{
+    a,b,c,d,e,f,g,h
+}
+
+association sets
+    between 
+    User[1] role user 
+    Preference[*] role status
+end
+
+
+association updatePlacements
+    between 
+    Result[*] role result
+    LeaderBoard[1] role leaderboard
+end
+
+composition has
+    between 
+    Board[1] role board
+    Square[64] role squares
+end
+
+association placedOn
+    between
+    Square[*] role Onboard
+    Piece[1] role piece
+end
+
+composition initialise
+    between
+    Game[1] role board
+    Board[1] role game
+end
+
+association joins
+    between
+    CheckersBlitz[1] role CB
+    User[*] role user
+end
+
+association arranges
+    between 
+    LeaderBoard[1] role leaderboard
+    User[*] role user
+end
+
+association promotedTo
+    between
+    Piece[0..1] role piece
+    King[0..1] role king
+end
+
+association movesLike
+    between 
+    Piece[*] role piece
+    MovePattern[1..*] role pattern
+end
+
+association pieceMoved
+    between 
+    Piece[1] role piece
+    Move[*] role moves ordered
+end
+
+association pieceJumped
+    between 
+    Move[1..*] role onMove
+    Piece[1..*] role capturedPiece
+end
+
+association GameMoves
+    between
+    Game[1] role game
+    Move[*] role moves ordered
+end
+
+association MoveTo
+    between
+    Move[*] role moves
+    Square[1] role destinationSquare
+end
+
+association sends
+    between
+    User[1] role sender
+    Request[*] role sentRequest
+end
+
+association respondsTo
+    between
+    User[1] role receiver
+    Request[*] role recievedRequest
+end
+
+association sendsBlock
+    between
+    User[1] role blocker
+    Blocked[*] role sentBlock
+end
+
+association recievesBlock
+    between
+    User[1] role blocked
+    Blocked[*] role receivedBlock
+end
+
+association identifiedWith
+    between
+    User[*] role joinedUser
+    IP[1] role address
+end
+
+association searches
+    between
+    User[1] role user
+    UserSearch[*] role searchedUser
+end
+
+association sendGameInvite
+between
+    User[1] role inviteSender
+    GameInvite[*] role sentInvite
+end
+
+association reciveGameInvite
+between
+    User[1] role inviteRecipiant
+    GameInvite[*] role receivedIvite 
+end
+
+association createsInvitedgame
+between 
+ GameInvite[1] role acceptedInvite
+ Game[1] role game
+end
+
+association requestRMatch
+between
+ User[2] role userRMrequest
+ RandomMatch[1] role MatchSearch
+end
+
+association promotedOn
+between
+    King[0..1] role king
+    Move[1] role move
+end
+
+association createRMatch
+between 
+    RandomMatch[1]
+    Game[1] role RandomGame
+end 
+
+aggregation locatedIn
+    between
+    IP[*] role userAddress
+    Country[1] role country 
+end
+
+aggregation apartOf
+    between
+    Country[*] role userCountry
+    Region[1] role region
+end
+
+aggregation hosts
+    between
+    Tournament[1] role tournament
+    Game[*] role games ordered
+end
+
