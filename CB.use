@@ -360,7 +360,7 @@ end
 association MoveTo
     between
     Move[*] role moves
-    Square[1] role destinationSquare
+    Square[1..*] role destinationSquare
 end
 
 association sends
