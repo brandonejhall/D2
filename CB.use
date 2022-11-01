@@ -106,8 +106,9 @@ attributes
    email: String
    password: String
    record: Integer derived: 0
-   status: UserStatus
+   userStatus: UserStatus
    friendsList: Set(User) derived: Set{}
+   title: UserTitle
 end
 
 class Game < Subject
@@ -115,6 +116,7 @@ attributes
  gameResult: GameResult
  time: DateTime
  gameStatus: GameStatus
+ gameCreatedOn: DateTime
 end
 
 class LeaderBoard < Observer
@@ -125,21 +127,26 @@ end
 
 class Request
 attributes
-    status: RequestStatus
+    requestStatus: RequestStatus
+    date: DateTime
 end
 
 class Blocked
 attributes
-    blocked: Boolean    
+    isBlocked: Boolean derived: false   
 end
 
 class Preference
 attributes 
-    name: String
-    value: String
+    searchPreference: SearchPreference
+    userStatus: UserStatus
 end
 
 class RandomMatch
+attributes
+ searchQueue: DateTime
+ regionMatchFound: Boolean derived:false
+ searchProgress:SearchProgress 
 end
 
 class GameInvite
@@ -151,11 +158,14 @@ end
 
 class UserSearch
 attributes
+    UserToFind: String derived: ''
     UserFound: Boolean derived: false
 end
 
 
 class CheckersBlitz 
+attributes
+    CurrentDate: DateTime
 end
 
 class IP 
@@ -222,6 +232,7 @@ associationclass Result
     Game[1] role match
     attributes
         isWinner:Boolean
+        Draw: Boolean
 end
 
 
@@ -231,9 +242,14 @@ enum RequestStatus{
     AwaitingResponse
 }
 
+enum SearchPreference{
+    Everyone,
+    Friends,
+    FriendsOfFriends
+}
 
 enum RegionIdentity{
-    NA,SA,ASIA,EUROPE,OCEANIA,CA
+    NA,SA,ASIA,EUROPE,OCEANIA,CA,AFRICA
 }
 
 enum Colour{
@@ -250,6 +266,11 @@ enum GameStatus{
     Started,
     Finished
 }
+enum SearchProgress{
+    Found,
+    Ongoing,
+    Ended
+}
 
 enum TournamentStatus{
     Ongoing,
@@ -261,6 +282,14 @@ enum GameResult{
     Win /* User has won */,
     Lose /* User has Lost*/,
     Draw /* User Draw */
+}
+
+enum UserTitle{
+    Beginner,
+    Novice,
+    Intermediate,
+    Master,
+    GrandMaster
 }
 
 
@@ -284,6 +313,11 @@ enum Column{
     a,b,c,d,e,f,g,h
 }
 
+association plays
+    between
+    User[1] role user
+    Game[*] role games ordered
+end
 association sets
     between 
     User[1] role user 
@@ -324,7 +358,7 @@ end
 association arranges
     between 
     LeaderBoard[1] role leaderboard
-    User[*] role user
+    User[*] role users ordered
 end
 
 association promotedTo
@@ -375,16 +409,16 @@ association respondsTo
     Request[*] role recievedRequest
 end
 
-association sendsBlock
+association updatesBlockedStatus
     between
     User[1] role blocker
-    Blocked[*] role sentBlock
+    Blocked[*] role updatedBlockStatus
 end
 
-association recievesBlock
+association recievesBStausUpdate
     between
     User[1] role blocked
-    Blocked[*] role receivedBlock
+    Blocked[*] role newBlockStatus
 end
 
 association identifiedWith
@@ -419,8 +453,8 @@ end
 
 association requestRMatch
 between
- User[2] role userRMrequest
- RandomMatch[1] role MatchSearch
+ User[1..*] role userRMrequest
+ RandomMatch[*] role MatchSearch
 end
 
 association promotedOn
@@ -435,13 +469,19 @@ between
     Game[1] role RandomGame
 end 
 
+association changesTo
+between
+    Preference[1] role currStatus
+    Preference[0..1] role newStatus
+end
+
 aggregation locatedIn
     between
     IP[*] role userAddress
     Country[1] role country 
 end
 
-aggregation apartOf
+composition apartOf
     between
     Country[*] role userCountry
     Region[1] role region
@@ -452,4 +492,83 @@ aggregation hosts
     Tournament[1] role tournament
     Game[*] role games ordered
 end
+
+
+
+/* ----------------------------------------------------------------------
+    CONSTRAINTS
+---------------------------------------------------------------------- */
+constraints
+
+context User 
+    inv BlockedNotInFriendsList:
+    updatedBlockStatus -> forAll(a | 
+        a.isBlocked = true implies( 
+            self.friendsList->excludes(a.blocked)
+            )
+        )
+    inv CannotBlockYourself:
+        updatedBlockStatus-> forAll(a |
+            a.isBlocked = true implies(
+                a.blocked <> self
+            )
+        )
+    inv CannotSendRequestToSelf:
+        sentRequest -> forAll(a|
+            a.receiver<>self
+            )
+    inv CannotFindUserwhoBlockedYouInSearch:
+        updatedBlockStatus-> forAll(a |
+            a.isBlocked = true implies(
+                a.blocked.searchedUser -> forAll(b|
+                    b.UserToFind = self.userName implies(
+                    b.UserFound = false
+                )
+            )
+        )
+        )
+    inv passwordGreater:
+        self.password.size()>11
+    inv AgeOver12:
+        let bYear = self.DOB.getYear() in 
+        (bYear-2022) >11
+    inv  CannotBeApartOfYourOwnFriendsList:
+        self.friendsList->excludes(self)
+    inv max7500Friends:
+        self.friendsList->size()>7501
+    inv AcceptedRequestOnFriendsList:
+        sentRequest -> forAll(sR | sR.requestStatus = 'Accepted' implies
+        self.friendsList->includes(sR.receiver))
+    inv OnFriendsListOfUserWhoHaveBeenAccepeted:
+        recievedRequest -> forAll (rR | rR.requestStatus = 'Accepted' implies
+        self.friendsList-> includes(self))
+    inv CannotSendFriendRequestWithAPendingRequest:
+        sentRequest.receiver -> forAll( x | sentRequest -> collect(
+            O | O.requestStatus = 'Ongoing' and O.receiver = x) -> size() = 1
+        )
+
+    
+        
+        
+
+         
+        
+   
+
+
+
+context CheckersBlitz
+    inv UniqueUserNames:
+        user -> forAll(a,b|
+            a.userName<>b.userName
+            )
+
+    inv UniqueEmails:
+        user -> forAll(i | let emails = user -> collect(y|
+            y.email = i.email) in
+                emails->size()=1)
+    
+    
+    
+
 
