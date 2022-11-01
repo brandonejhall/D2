@@ -138,8 +138,7 @@ end
 
 class Preference
 attributes 
-    searchPreference: SearchPreference
-    userStatus: UserStatus
+   preferences: Tuple(searchPreference: SearchPreference,userStatus: UserStatus)
 end
 
 class RandomMatch
@@ -151,16 +150,13 @@ end
 
 class GameInvite
 attributes 
-    InviteAccepted: Boolean derived: false
+    inviteSatus: InviteStatus 
+    Timer: DateTime
 end
 
 
 
-class UserSearch
-attributes
-    UserToFind: String derived: ''
-    UserFound: Boolean derived: false
-end
+
 
 
 class CheckersBlitz 
@@ -168,15 +164,6 @@ attributes
     CurrentDate: DateTime
 end
 
-class IP 
-attributes
-    IPaddress:String
-end
-
-class Country
-attributes
-    name:String
-end
 
 class Region
 attributes
@@ -206,10 +193,18 @@ end
 class King < Piece
 end
 
-class MovePattern
+class MovePattern <OneSquareAny
     attributes 
         patternType: Pattern
 end
+
+class OneSquareAny < OneSquareUpDiagonally
+end
+
+class OneSquareUpDiagonally
+end
+
+
 
 class Square
    attributes
@@ -255,6 +250,12 @@ enum RegionIdentity{
 enum Colour{
     Red,
     White
+}
+
+enum InviteStatus{
+    Accepted,
+    Rejected,
+    AwaitingResponse
 }
 
 enum Shade{
@@ -324,12 +325,6 @@ association sets
     Preference[*] role status
 end
 
-
-association updatePlacements
-    between 
-    Result[*] role result
-    LeaderBoard[1] role leaderboard
-end
 
 composition has
     between 
@@ -421,34 +416,25 @@ association recievesBStausUpdate
     Blocked[*] role newBlockStatus
 end
 
-association identifiedWith
-    between
-    User[*] role joinedUser
-    IP[1] role address
-end
 
-association searches
-    between
-    User[1] role user
-    UserSearch[*] role searchedUser
-end
+
 
 association sendGameInvite
 between
     User[1] role inviteSender
-    GameInvite[*] role sentInvite
+    GameInvite[*] role sentInvite ordered
 end
 
 association reciveGameInvite
 between
     User[1] role inviteRecipiant
-    GameInvite[*] role receivedIvite 
+    GameInvite[*] role receivedInvite ordered
 end
 
 association createsInvitedgame
 between 
- GameInvite[1] role acceptedInvite
- Game[1] role game
+ GameInvite[1] role acceptedInvite ordered
+ Game[0..1] role game
 end
 
 association requestRMatch
@@ -466,7 +452,7 @@ end
 association createRMatch
 between 
     RandomMatch[1]
-    Game[1] role RandomGame
+    Game[0..1] role RandomGame
 end 
 
 association changesTo
@@ -475,22 +461,24 @@ between
     Preference[0..1] role newStatus
 end
 
-aggregation locatedIn
+
+
+association regionSelect
     between
-    IP[*] role userAddress
-    Country[1] role country 
+    User[*] role joinedUser
+    Region[1] role region
 end
 
-composition apartOf
+association Regionchanged
     between
-    Country[*] role userCountry
-    Region[1] role region
+    Region[1] role currRegion
+    Region[0..1] role newRegion
 end
 
 aggregation hosts
     between
     Tournament[1] role tournament
-    Game[*] role games ordered
+    Game[30] role games ordered
 end
 
 
@@ -517,16 +505,6 @@ context User
         sentRequest -> forAll(a|
             a.receiver<>self
             )
-    inv CannotFindUserwhoBlockedYouInSearch:
-        updatedBlockStatus-> forAll(a |
-            a.isBlocked = true implies(
-                a.blocked.searchedUser -> forAll(b|
-                    b.UserToFind = self.userName implies(
-                    b.UserFound = false
-                )
-            )
-        )
-        )
     inv passwordGreater:
         self.password.size()>11
     inv AgeOver12:
@@ -546,8 +524,14 @@ context User
         sentRequest.receiver -> forAll( x | sentRequest -> collect(
             O | O.requestStatus = 'Ongoing' and O.receiver = x) -> size() = 1
         )
+    inv CannotSendFriendRequestToFriends:
+        sentRequest -> forAll(x | x.requestStatus = 'Ongoing' implies 
+        self.friendsList->excludes(x.receiver))
+    inv CannotSendGameInviteToUserInGame:
+        sentInvite -> forAll(x| x.inviteSatus = 'AwaitingResponse' implies
+        x.inviteRecipiant.games -> forAll(g| g.gameStatus = 'Finished'))
 
-    
+
         
         
 
@@ -568,7 +552,4 @@ context CheckersBlitz
             y.email = i.email) in
                 emails->size()=1)
     
-    
-    
-
 
