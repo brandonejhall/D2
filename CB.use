@@ -117,6 +117,8 @@ attributes
  time: DateTime
  gameStatus: GameStatus
  gameCreatedOn: DateTime
+ Draw: Boolean
+
 end
 
 class LeaderBoard < Observer
@@ -172,8 +174,8 @@ end
 
 class Tournament 
 attributes 
- nbrOfPlayers: Integer
- nbrOfMatches: Integer
+ nbrOfPlayers: Integer derived: 0
+ nbrOfMatches: Integer derived: 0
  status: TournamentStatus
  winner: String derived: ''
 end
@@ -224,12 +226,16 @@ end
 associationclass Result 
     between
     User[2] role users
-    Game[1] role match
+    Game[*] role match ordered
     attributes
         isWinner:Boolean
-        Draw: Boolean
 end
 
+associationclass UserArrangement
+    between 
+    LeaderBoard[1] role leaderboard
+    User[*] role users ordered
+end
 
 enum RequestStatus{
     Accepted,
@@ -314,11 +320,7 @@ enum Column{
     a,b,c,d,e,f,g,h
 }
 
-association plays
-    between
-    User[1] role user
-    Game[*] role games ordered
-end
+
 association sets
     between 
     User[1] role user 
@@ -350,11 +352,7 @@ association joins
     User[*] role user
 end
 
-association arranges
-    between 
-    LeaderBoard[1] role leaderboard
-    User[*] role users ordered
-end
+
 
 association promotedTo
     between
@@ -416,7 +414,11 @@ association recievesBStausUpdate
     Blocked[*] role newBlockStatus
 end
 
-
+association observes
+    between
+    Observer[*] role observer
+    Subject[*] role subject
+end
 
 
 association sendGameInvite
@@ -433,7 +435,7 @@ end
 
 association createsInvitedgame
 between 
- GameInvite[1] role acceptedInvite ordered
+ GameInvite[1] role acceptedInvite 
  Game[0..1] role game
 end
 
@@ -461,7 +463,11 @@ between
     Preference[0..1] role newStatus
 end
 
-
+association joinTournament
+between 
+    User[0..16]
+    Tournament[*]
+end
 
 association regionSelect
     between
@@ -529,16 +535,13 @@ context User
         self.friendsList->excludes(x.receiver))
     inv CannotSendGameInviteToUserInGame:
         sentInvite -> forAll(x| x.inviteSatus = 'AwaitingResponse' implies
-        x.inviteRecipiant.games -> forAll(g| g.gameStatus = 'Finished'))
+        x.inviteRecipiant.match -> forAll(g| g.gameStatus = 'Finished'))
 
 
         
         
 
-         
         
-   
-
 
 
 context CheckersBlitz
