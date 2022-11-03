@@ -122,8 +122,6 @@ attributes
 end
 
 class LeaderBoard < Observer
-attributes
-placements: Integer derived:0
 end
 
 
@@ -219,8 +217,6 @@ class Move
 end
 
 class Board 
-attributes 
-    squares: Integer derived:64
 end 
 
 associationclass Result 
@@ -235,6 +231,8 @@ associationclass UserArrangement
     between 
     LeaderBoard[1] role leaderboard
     User[*] role users ordered
+    attributes
+    placements: Integer derived:0
 end
 
 enum RequestStatus{
@@ -334,10 +332,10 @@ composition has
     Square[64] role squares
 end
 
-association placedOn
+association pieceLocation
     between
-    Square[*] role Onboard
-    Piece[1] role piece
+    Square[0..1] role currentPlaceOnBoard
+    Piece[0..1] role pieceInSquare
 end
 
 composition initialise
@@ -372,10 +370,10 @@ association pieceMoved
     Move[*] role moves ordered
 end
 
-association pieceJumped
+association moveCaptured
     between 
-    Move[1..*] role onMove
-    Piece[1..*] role capturedPiece
+    Move[*] role onMove
+    Piece[*] role capturedPiece
 end
 
 association GameMoves
@@ -463,6 +461,12 @@ between
     Preference[0..1] role newStatus
 end
 
+association RandomSelects
+between 
+    RandomMatch[*] role foundMatchUp
+    User[1] role selectedUser
+end
+
 association joinTournament
 between 
     User[0..16]
@@ -489,16 +493,17 @@ end
 
 
 
+
 /* ----------------------------------------------------------------------
     CONSTRAINTS
 ---------------------------------------------------------------------- */
 constraints
 
 context User 
-    inv BlockedNotInFriendsList:
+    inv BlockedUsersCannotBeAcceptedAsFriends:
     updatedBlockStatus -> forAll(a | 
         a.isBlocked = true implies( 
-            self.friendsList->excludes(a.blocked)
+            recievedRequest -> select(z| z.requestStatus = 'Accepted') -> excludes(a.blocked)
             )
         )
     inv CannotBlockYourself:
@@ -519,13 +524,16 @@ context User
     inv  CannotBeApartOfYourOwnFriendsList:
         self.friendsList->excludes(self)
     inv max7500Friends:
-        self.friendsList->size()>7501
+         sentRequest -> collect(sR | sR.requestStatus = 'Accepted') -> size() < 7501
+
     inv AcceptedRequestOnFriendsList:
         sentRequest -> forAll(sR | sR.requestStatus = 'Accepted' implies
         self.friendsList->includes(sR.receiver))
+
     inv OnFriendsListOfUserWhoHaveBeenAccepeted:
         recievedRequest -> forAll (rR | rR.requestStatus = 'Accepted' implies
         self.friendsList-> includes(self))
+
     inv CannotSendFriendRequestWithAPendingRequest:
         sentRequest.receiver -> forAll( x | sentRequest -> collect(
             O | O.requestStatus = 'Ongoing' and O.receiver = x) -> size() = 1
@@ -533,10 +541,36 @@ context User
     inv CannotSendFriendRequestToFriends:
         sentRequest -> forAll(x | x.requestStatus = 'Ongoing' implies 
         self.friendsList->excludes(x.receiver))
+        
     inv CannotSendGameInviteToUserInGame:
         sentInvite -> forAll(x| x.inviteSatus = 'AwaitingResponse' implies
         x.inviteRecipiant.match -> forAll(g| g.gameStatus = 'Finished'))
+    inv CantSearchForMatchWhileInMatch:
+        MatchSearch -> forAll(
+            x| x.searchProgress = 'Ongoing' implies match -> collect(
+                x| x.gameStatus = 'Ongoing') -> size() = 0)
+    inv CannotSendFriendRequestWhenBlocked:
+        sentRequest ->forAll(v | v.requestStatus = 'Ongoing' 
+            implies 
+                v.receiver.updatedBlockStatus -> select( 
+                    x | x.isBlocked = true) ->excludes(self)
+            ) 
+    inv OnlyCanHaveOneOngoingRandomSearch:
+        MatchSearch -> collect(z| z.searchProgress = 'Ongoing') -> size() >2
 
+    inv CannotBeRandomlyMatchedUpWithBlockedUser:
+        let blockedUsers = updatedBlockStatus -> select(
+            x| x.isBlocked = true) in
+        MatchSearch -> forAll(
+             z| blockedUsers.blocked -> excludes(
+                z.selectedUser)
+                )
+
+
+
+
+    
+    
 
         
         
@@ -556,3 +590,37 @@ context CheckersBlitz
                 emails->size()=1)
     
 
+context Game
+    inv AtMostOneWinner:
+    result -> collect (x| x.isWinner = true)-> size() < 2
+    inv MatchCantBeDrawnAndWon:
+    self.gameStatus = 'Finished' and self.Draw = true implies result -> collect(
+        x| x.isWinner = true) -> size() = 0
+
+context Tournament
+    inv TournamentGamesCannotBeDrawn:
+    games.forAll(x| x.Draw = false)
+    inv TournamentEndsWhenWinnerisFound:
+    self.status = 'Finished' implies user -> collect(
+        x|x.userName)->includes(
+            self.winner)
+
+
+
+    
+context Board
+    inv NoTwoSquaresHaveTheSameRowAndColumn: 
+    squares -> forAll(a,b| a<>b implies(
+        a.row <> b.row and a.column<>b.column))
+    inv ExactlyOneRowAndColumnForEachSquare:
+    
+    let sRow  = Set{'one','two','three','four','five','six','seven','eight'} in
+    let sColumn = Set{'a','b','c','d','e','f','g','h'} in
+
+    sRow -> forAll( k| 
+    sColumn -> forAll(m| squares -> select(s| 
+        s.row = k and s.column = m) -> size() = 1
+        )
+        )
+
+    
