@@ -623,4 +623,37 @@ context Board
         )
         )
 
+context Game 
+    inv CapturedPieceNotOnBoard:
+        moves.capturedPiece.currentPlaceOnBoard -> collect(x | x) -> size= 0
+
+context Piece
+    inv CannotCapturePieceOfSameColour:
+        moves.capturedPiece-> forAll(x| x.colour<>self.colour)
+    inv CapturedPieceCannotBePromotedPiece:
+        king -> size() = 1 implies self.currentPlaceOnBoard -> size() = 1
+
+context Board
+    inv BottomRightSquareIsRed:
+        squares -> forAll(x | x.row = 'one' and x.column = 'a' implies x.shade = 'Red')
+    inv AdjacentSquareWithSameRowDifferentShade:
+        let sColumn = OrderedSet{'a','b','c','d','e','f','g','h'} in
+
+        Set{'one','two','three','four','five','six','seven','eight'} -> forAll(r| 
+        squares -> select(
+            s| s.row = r) -> forAll(
+                x,y| sColumn -> indexOf(x.column)+1 = sColumn -> indexOf(y.column) implies
+                    x.shade<>y.shade)
+        )
+    inv AdjacentSquareWithSameColumnDifferentShade:
+        let sRow = OrderedSet{'one','two','three','four','five','six','seven','eight'} in
+        
+        Set{'a','b','c','d','e','f','g','h'} -> forAll(r| 
+        squares -> select(
+            s| s.row = r) -> forAll(
+                x,y| sRow -> indexOf(x.row)+1 = sRow -> indexOf(y.row) implies
+                    x.shade<>y.shade)
+        )
     
+
+        
