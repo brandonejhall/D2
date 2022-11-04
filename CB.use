@@ -350,6 +350,11 @@ association joins
     User[*] role user
 end
 
+aggregation gamePieces
+    between 
+    Game[1] role game
+    Piece[1..24] role pieces
+end
 
 
 association promotedTo
@@ -367,7 +372,7 @@ end
 association pieceMoved
     between 
     Piece[1] role piece
-    Move[*] role moves ordered
+    Move[*] role pMoves ordered
 end
 
 association moveCaptured
@@ -385,7 +390,7 @@ end
 association MoveTo
     between
     Move[*] role moves
-    Square[1..*] role destinationSquare
+    Square[1..*] role destinationSquare ordered
 end
 
 association sends
@@ -627,11 +632,17 @@ context Game
     inv CapturedPieceNotOnBoard:
         moves.capturedPiece.currentPlaceOnBoard -> collect(x | x) -> size= 0
 
+
+
 context Piece
     inv CannotCapturePieceOfSameColour:
-        moves.capturedPiece-> forAll(x| x.colour<>self.colour)
+        pMoves.capturedPiece-> forAll(x| x.colour<>self.colour)
     inv CapturedPieceCannotBePromotedPiece:
         king -> size() = 1 implies self.currentPlaceOnBoard -> size() = 1
+    inv aPieceThatIsNotAKingOnlyMovesDiagonally:
+        king -> size() = 0 implies pattern-> forAll(x| x.patternType = 'OneSquareDiagonally' )  
+
+    
 
 context Board
     inv BottomRightSquareIsRed:
@@ -654,6 +665,12 @@ context Board
                 x,y| sRow -> indexOf(x.row)+1 = sRow -> indexOf(y.row) implies
                     x.shade<>y.shade)
         )
+    inv ThereMustBe32RedSquare:
+        squares -> collect(x| x.shade = 'Red') -> size() = 32
+    inv ThereMustBe32BlckSquare:
+        squares -> collect(x| x.shade = 'Black') -> size() = 32
+
+        
     
 
         
