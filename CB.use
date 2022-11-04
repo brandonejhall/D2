@@ -371,7 +371,7 @@ end
 
 association pieceMoved
     between 
-    Piece[1] role piece
+    Piece[*] role piece
     Move[*] role pMoves ordered
 end
 
@@ -601,6 +601,19 @@ context Game
     inv MatchCantBeDrawnAndWon:
     self.gameStatus = 'Finished' and self.Draw = true implies result -> collect(
         x| x.isWinner = true) -> size() = 0
+    inv ThereMustBe12RedPiecesOnTheBoardAtStart:
+        moves -> size() = 0 and (self.gameStatus = 'Started') implies 
+        pieces -> collect(x| x.colour='Red') -> size() = 12
+    inv ThereMustBe12BlackPiecesOnTheBoardAtStart:
+        moves -> size() = 0 and (self.gameStatus = 'Started') implies 
+        pieces -> collect(x| x.colour='Black') -> size() = 12
+    inv CapturedPieceNotOnBoard:
+        moves.capturedPiece.currentPlaceOnBoard -> collect(x | x) -> size= 0
+    inv GameMovesContainsAllTheMovesOfPiecesInGame:
+        pieces -> forAll(x| moves -> includesAll(x.pMoves))
+
+    inv PieceMustBeApartOfTheGame:
+        moves -> forAll(c| pieces -> includesAll(c.piece))
 
 context Tournament
     inv TournamentGamesCannotBeDrawn:
@@ -609,8 +622,6 @@ context Tournament
     self.status = 'Finished' implies user -> collect(
         x|x.userName)->includes(
             self.winner)
-
-
 
     
 context Board
@@ -628,9 +639,7 @@ context Board
         )
         )
 
-context Game 
-    inv CapturedPieceNotOnBoard:
-        moves.capturedPiece.currentPlaceOnBoard -> collect(x | x) -> size= 0
+
 
 
 
@@ -640,7 +649,11 @@ context Piece
     inv CapturedPieceCannotBePromotedPiece:
         king -> size() = 1 implies self.currentPlaceOnBoard -> size() = 1
     inv aPieceThatIsNotAKingOnlyMovesDiagonally:
-        king -> size() = 0 implies pattern-> forAll(x| x.patternType = 'OneSquareDiagonally' )  
+        king -> size() = 0 implies pattern-> forAll(x| x.patternType = 'OneSquareDiagonally' )
+    inv squareMustBeEmptyBeforeMoving:
+        pMoves -> forAll(x| x.destinationSquare -> forAll (c| c.pieceInSquare -> size() = 0))  
+    
+
 
     
 
