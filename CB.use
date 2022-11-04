@@ -107,7 +107,6 @@ attributes
    password: String
    record: Integer derived: 0
    userStatus: UserStatus
-   friendsList: Set(User) derived: Set{}
    title: UserTitle
 end
 
@@ -154,9 +153,10 @@ attributes
     Timer: DateTime
 end
 
-
-
-
+class Rounds
+attributes  
+    numberOfMatches: Integer derived:8
+end
 
 
 class CheckersBlitz 
@@ -224,6 +224,7 @@ associationclass Result
     User[2] role users
     Game[*] role match ordered
     attributes
+        player:Colour
         isWinner:Boolean
 end
 
@@ -340,8 +341,8 @@ end
 
 composition initialise
     between
-    Game[1] role board
-    Board[1] role game
+    Game[1] role game
+    Board[1] role board
 end
 
 association joins
@@ -371,7 +372,7 @@ end
 
 association pieceMoved
     between 
-    Piece[*] role piece
+    Piece[1] role piece
     Move[*] role pMoves ordered
 end
 
@@ -490,11 +491,18 @@ association Regionchanged
     Region[0..1] role newRegion
 end
 
-aggregation hosts
+aggregation roundGames
     between
-    Tournament[1] role tournament
-    Game[30] role games ordered
+    Rounds[1] role round
+    Game[1..8] role games 
 end
+
+aggregation tournamentRounds
+    between 
+    Tournament [1] role tournament
+    Rounds [4] role rounds ordered
+end
+    
 
 
 
@@ -527,17 +535,9 @@ context User
         let bYear = self.DOB.getYear() in 
         (bYear-2022) >11
     inv  CannotBeApartOfYourOwnFriendsList:
-        self.friendsList->excludes(self)
+        recievedRequest->select(x|x.requestStatus = 'Accepted') -> forAll(z| z.sender-> excludes(self))
     inv max7500Friends:
          sentRequest -> collect(sR | sR.requestStatus = 'Accepted') -> size() < 7501
-
-    inv AcceptedRequestOnFriendsList:
-        sentRequest -> forAll(sR | sR.requestStatus = 'Accepted' implies
-        self.friendsList->includes(sR.receiver))
-
-    inv OnFriendsListOfUserWhoHaveBeenAccepeted:
-        recievedRequest -> forAll (rR | rR.requestStatus = 'Accepted' implies
-        self.friendsList-> includes(self))
 
     inv CannotSendFriendRequestWithAPendingRequest:
         sentRequest.receiver -> forAll( x | sentRequest -> collect(
@@ -545,7 +545,7 @@ context User
         )
     inv CannotSendFriendRequestToFriends:
         sentRequest -> forAll(x | x.requestStatus = 'Ongoing' implies 
-        self.friendsList->excludes(x.receiver))
+        sentRequest -> select(c|c.requestStatus = 'Accepted') -> excludes(x.receiver))
         
     inv CannotSendGameInviteToUserInGame:
         sentInvite -> forAll(x| x.inviteSatus = 'AwaitingResponse' implies
@@ -570,18 +570,6 @@ context User
              z| blockedUsers.blocked -> excludes(
                 z.selectedUser)
                 )
-
-
-
-
-    
-    
-
-        
-        
-
-        
-
 
 context CheckersBlitz
     inv UniqueUserNames:
@@ -611,13 +599,28 @@ context Game
         moves.capturedPiece.currentPlaceOnBoard -> collect(x | x) -> size= 0
     inv GameMovesContainsAllTheMovesOfPiecesInGame:
         pieces -> forAll(x| moves -> includesAll(x.pMoves))
-
     inv PieceMustBeApartOfTheGame:
-        moves -> forAll(c| pieces -> includesAll(c.piece))
+        moves -> forAll(c| pieces -> includes(c.piece))
+    inv RedPiecesSetUpAtStart:
+        let redStartingRows = OrderedSet{'one','two','three'} in
+        let redRows = board.squares -> select(Rsquares | redStartingRows -> includes(Rsquares.row) and Rsquares.shade = 'Red') in
+        moves -> size() = 0 and self.gameStatus = 'Started' implies 
+                redRows -> forAll(x| x.pieceInSquare -> size() = 1 and x.pieceInSquare.colour = 'Red' )
+    inv WhitePiecesSetUpAtStart:
+        let whiteStartingRows = OrderedSet{'six','seven','eight'} in
+        let whiteRows = board.squares -> select(Wsquares | whiteStartingRows -> includes(Wsquares.row) and Wsquares.shade = 'Red') in
+        moves -> size() = 0 and self.gameStatus = 'Started' implies 
+                whiteRows -> forAll(x| x.pieceInSquare -> size() = 1 and x.pieceInSquare.colour = 'White' )
+    
+
+
+
+
+
 
 context Tournament
     inv TournamentGamesCannotBeDrawn:
-    games.forAll(x| x.Draw = false)
+    rounds.games->forAll(x| x.Draw = false)
     inv TournamentEndsWhenWinnerisFound:
     self.status = 'Finished' implies user -> collect(
         x|x.userName)->includes(
@@ -639,6 +642,7 @@ context Board
         )
         )
 
+context Move
 
 
 
