@@ -113,7 +113,7 @@ end
 class Game < Subject
 attributes
  gameResult: GameResult
- time: DateTime
+timer: Integer
  gameStatus: GameStatus
  gameCreatedOn: DateTime
  Draw: Boolean
@@ -172,8 +172,8 @@ end
 
 class Tournament 
 attributes 
- nbrOfPlayers: Integer derived: 0
- nbrOfMatches: Integer derived: 0
+ nbrOfPlayers: 30
+ nbrOfMatches: 15
  status: TournamentStatus
  winner: String derived: ''
 end
@@ -439,8 +439,8 @@ end
 
 association createsInvitedgame
 between 
- GameInvite[1] role acceptedInvite 
- Game[0..1] role game
+ GameInvite[0..1] role acceptedInvite 
+ Game[1] role game
 end
 
 association requestRMatch
@@ -457,8 +457,8 @@ end
 
 association createRMatch
 between 
-    RandomMatch[1]
-    Game[0..1] role RandomGame
+    RandomMatch[0..1]
+    Game[1] role RandomGame
 end 
 
 association changesTo
@@ -493,7 +493,7 @@ end
 
 aggregation roundGames
     between
-    Rounds[1] role round
+    Rounds[0..1] role round
     Game[1..8] role games 
 end
 
@@ -620,7 +620,179 @@ context Game
     inv WhenWhiteWinsByClearingBoard:
         pieces-> collect(x| x.colour = Colour::Red)-> size() = 0 implies self.Draw = false implies
             result -> select(z| z.player= Colour::White and z.isWinner = true) -> size() = 1
+    
+    inv WhenWhiteHasNoPlaceToMoveOnBoard:
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        let whiteP = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
+        let whitePK = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x=x.king) in
+        let redP = pieces -> select(x| x.colour = Colour::Red and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
+        let redPK = pieces -> select(x| x.colour = Colour::Red and x.currentPlaceOnBoard-> size() =  1 and x=x.king) in
+        whiteP -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+         
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-1)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) and (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-2)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)-2)))-> forAll(x| x.pieceInSquare -> size() > 0)) and 
+
+        whitePK -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+          
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) and  f.row = sRow -> at(sRow -> indexOf(f.row)+1))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-1) and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) or (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2 ))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> forAll(x| x.pieceInSquare -> size() > 0)) 
+           implies
+        redP -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+         
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-1)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)+1)) and (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-2)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> exists(x| x.pieceInSquare -> size() = 0)) or 
+
+        redPK -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+          
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) and  f.row = sRow -> at(sRow -> indexOf(f.row)+1))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-1) and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) or (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2 ))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> exists(x| x.pieceInSquare -> size() = 0)) 
+           implies
+
+        result -> collect(x | x.player= Colour::Red and x.isWinner = true) -> size() = 1
+
+       inv WhenRedHasNoPlaceToMoveOnBoard:
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        let whiteP = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
+        let whitePK = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x=x.king) in
+        let redP = pieces -> select(x| x.colour = Colour::Red and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
+        let redPK = pieces -> select(x| x.colour = Colour::Red and x.currentPlaceOnBoard-> size() =  1 and x=x.king) in
+        redP -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+         
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-1)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)+1)) and (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-2)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> forAll(x| x.pieceInSquare -> size() > 0)) and 
+
+        redPK -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+          
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) and  f.row = sRow -> at(sRow -> indexOf(f.row)+1))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-1) and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) or (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2 ))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> forAll(x| x.pieceInSquare -> size() > 0)) 
+           implies
+        whiteP -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+         
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-1)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) and (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-2)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)-2)))-> exists(x| x.pieceInSquare -> size() = 0)) or 
+
+        whitePK -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+          
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) and  f.row = sRow -> at(sRow -> indexOf(f.row)+1))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-1) and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) or (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2 ))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> exists(x| x.pieceInSquare -> size() = 0)) 
+           implies
+
+        result -> collect(x | x.player= Colour::White and x.isWinner = true) -> size() = 1
+    
+
+        inv WhenNoHasNoPlaceToMoveOnBoard:
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        let whiteP = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
+        let whitePK = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x=x.king) in
+        let redP = pieces -> select(x| x.colour = Colour::Red and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
+        let redPK = pieces -> select(x| x.colour = Colour::Red and x.currentPlaceOnBoard-> size() =  1 and x=x.king) in
+        round -> size() = 0 and (randomMatch-> size() = 1 or acceptedInvite -> size() = 1) implies
+        redP -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+         
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-1)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)+1)) and (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-2)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> forAll(x| x.pieceInSquare -> size() > 0)) and 
+
+        redPK -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+          
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) and  f.row = sRow -> at(sRow -> indexOf(f.row)+1))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-1) and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) or (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2 ))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> forAll(x| x.pieceInSquare -> size() > 0)) 
+           and
+        whiteP -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+         
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-1)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) and (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) or f.column = sColumn -> at(sColumn -> indexOf(f.column)-2)
+         
+           and f.row = sRow -> at(sRow -> indexOf(f.row)-2)))-> forAll(x| x.pieceInSquare -> size() > 0)) and 
+
+        whitePK -> select(z|  z.currentPlaceOnBoard->size() = 1) -> forAll (x| board.squares->select(
+          
+           f| (f.column = sColumn -> at(sColumn -> indexOf(f.column)+1) and  f.row = sRow -> at(sRow -> indexOf(f.row)+1))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-1) and f.row = sRow -> at(sRow -> indexOf(f.row)-1)) or (f.column = sColumn -> at(sColumn -> indexOf(f.column)+2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2 ))
+          
+           or (f.column = sColumn -> at(sColumn -> indexOf(f.column)-2) and f.row = sRow -> at(sRow -> indexOf(f.row)+2)))-> forAll(x| x.pieceInSquare -> size() > 0))
+           implies
+
+        result -> collect(x | x.isWinner = false) -> size() = 2 and self.Draw = true
+
+        inv TimeRunsOutOutsideOfTournamentMatchIsDrawn:
+            round -> size() = 0 and (randomMatch-> size() = 1 or acceptedInvite -> size() = 1) and timer = 15  and 
+            pieces->collect(x|x.colour= Colour::Red and x.king->size() = 1) ->size() =  pieces->collect(x|x.colour= Colour::White and x.king->size() = 1) ->size()
+            implies self.Draw = true 
+
+        inv TimeRunsOutInTournamentAndRedHasMostKings:
             
+            let redP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+            let whiteP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+
+            round -> size() > 0 and timer = 15 and redP > whiteP implies
+            
+            result -> collect(f| f.player = Colour::Red and f.isWinner = true) -> size() = 1
+        inv TimeRunsOutInTournamentAndWhiteHasMostKings:
+            
+            let redP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+            let whiteP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+
+            round -> size() > 0 and timer = 15 and redP < whiteP implies
+            
+            result -> collect(f| f.player = Colour::White and f.isWinner = true) -> size() = 1
+
+        inv TimeRunsOutInTournamentAndBothPiecesHasEqualAmountOfKings:
+            
+            let redP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+            let whiteP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+
+            round -> size() > 0 and timer = 15 and redP < whiteP implies
+            
+            result -> collect(f| f.player = Colour::White and f.isWinner = true) -> size() = 1
+        
+        
+
+
+    
+
+        
+
+
+    
+        
+
+
+        
     
 
             
@@ -673,7 +845,6 @@ context Piece
         pMoves -> forAll(x,y| sRow -> indexOf(y.destinationSquare->last().row) = sRow ->indexOf(x.destinationSquare->last().row)+1 and 
           (sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) + 1 or
           sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) - 1))
-
     inv WhitePieceMustMoveDownOneRowAndToAColumnLeftOrRightDiagonally:
         let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
         let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
@@ -681,6 +852,9 @@ context Piece
         pMoves -> forAll(x,y| sRow -> indexOf(y.destinationSquare->last().row) = sRow ->indexOf(x.destinationSquare->last().row)-1 and 
           (sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) + 1 or
           sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) - 1))
+
+
+
     inv RedPieceBecomesKingWhenItHasBeenAtTheEndOfTheBoard:
         self = king implies
         pMoves -> collect(x| x.destinationSquare -> forAll(z|z.row = Row::eight) ) -> notEmpty()
