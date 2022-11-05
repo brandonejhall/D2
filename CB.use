@@ -378,7 +378,7 @@ end
 
 association moveCaptured
     between 
-    Move[*] role onMove
+    Move[1] role onMove
     Piece[*] role capturedPiece
 end
 
@@ -516,7 +516,7 @@ context User
     inv BlockedUsersCannotBeAcceptedAsFriends:
     updatedBlockStatus -> forAll(a | 
         a.isBlocked = true implies( 
-            recievedRequest -> select(z| z.requestStatus = 'Accepted') -> excludes(a.blocked)
+            recievedRequest -> select(z| z.requestStatus = RequestStatus::Accepted) -> excludesAll(a.blocked.sentRequest->select(x|x.receiver = self))
             )
         )
     inv CannotBlockYourself:
@@ -535,33 +535,33 @@ context User
         let bYear = self.DOB.getYear() in 
         (bYear-2022) >11
     inv  CannotBeApartOfYourOwnFriendsList:
-        recievedRequest->select(x|x.requestStatus = 'Accepted') -> forAll(z| z.sender-> excludes(self))
+        recievedRequest->select(x|x.requestStatus = RequestStatus::Accepted) -> forAll(z| z.sender-> excludes(self))
     inv max7500Friends:
-         sentRequest -> collect(sR | sR.requestStatus = 'Accepted') -> size() < 7501
+         sentRequest -> collect(sR | sR.requestStatus = RequestStatus::Accepted) -> size() < 7501
 
     inv CannotSendFriendRequestWithAPendingRequest:
         sentRequest.receiver -> forAll( x | sentRequest -> collect(
-            O | O.requestStatus = 'Ongoing' and O.receiver = x) -> size() = 1
+            O | O.requestStatus = RequestStatus::AwaitingResponse and O.receiver = x) -> size() = 1
         )
     inv CannotSendFriendRequestToFriends:
-        sentRequest -> forAll(x | x.requestStatus = 'Ongoing' implies 
-        sentRequest -> select(c|c.requestStatus = 'Accepted') -> excludes(x.receiver))
+        sentRequest -> forAll(x | x.requestStatus = RequestStatus::AwaitingResponse implies 
+        sentRequest -> select(c|c.requestStatus = RequestStatus::Accepted) -> forAll(z| z.receiver <> x.receiver))
         
     inv CannotSendGameInviteToUserInGame:
-        sentInvite -> forAll(x| x.inviteSatus = 'AwaitingResponse' implies
-        x.inviteRecipiant.match -> forAll(g| g.gameStatus = 'Finished'))
+        sentInvite -> forAll(x| x.inviteSatus = InviteStatus::AwaitingResponse implies
+        x.inviteRecipiant.match -> forAll(g| g.gameStatus = GameStatus::Finished))
     inv CantSearchForMatchWhileInMatch:
         MatchSearch -> forAll(
-            x| x.searchProgress = 'Ongoing' implies match -> collect(
-                x| x.gameStatus = 'Ongoing') -> size() = 0)
+            x| x.searchProgress = SearchProgress::Ongoing implies match -> collect(
+                x| x.gameStatus = GameStatus::Ongoing) -> size() = 0)
     inv CannotSendFriendRequestWhenBlocked:
-        sentRequest ->forAll(v | v.requestStatus = 'Ongoing' 
+        sentRequest ->forAll(v | v.requestStatus = RequestStatus::AwaitingResponse 
             implies 
                 v.receiver.updatedBlockStatus -> select( 
-                    x | x.isBlocked = true) ->excludes(self)
+                    x|x.isBlocked = true) ->forAll (z| z.blocked<>self)
             ) 
     inv OnlyCanHaveOneOngoingRandomSearch:
-        MatchSearch -> collect(z| z.searchProgress = 'Ongoing') -> size() >2
+        MatchSearch -> collect(z| z.searchProgress = SearchProgress::Ongoing) -> size() >2
 
     inv CannotBeRandomlyMatchedUpWithBlockedUser:
         let blockedUsers = updatedBlockStatus -> select(
@@ -587,14 +587,14 @@ context Game
     inv AtMostOneWinner:
     result -> collect (x| x.isWinner = true)-> size() < 2
     inv MatchCantBeDrawnAndWon:
-    self.gameStatus = 'Finished' and self.Draw = true implies result -> collect(
+    self.gameStatus = GameStatus::Finished and self.Draw = true implies result -> collect(
         x| x.isWinner = true) -> size() = 0
     inv ThereMustBe12RedPiecesOnTheBoardAtStart:
-        moves -> size() = 0 and (self.gameStatus = 'Started') implies 
-        pieces -> collect(x| x.colour='Red') -> size() = 12
-    inv ThereMustBe12BlackPiecesOnTheBoardAtStart:
-        moves -> size() = 0 and (self.gameStatus = 'Started') implies 
-        pieces -> collect(x| x.colour='Black') -> size() = 12
+        moves -> size() = 0 and (self.gameStatus = GameStatus::Started) implies 
+        pieces -> collect(x| x.colour=Colour::Red) -> size() = 12
+    inv ThereMustBe12WhitePiecesOnTheBoardAtStart:
+        moves -> size() = 0 and (self.gameStatus = GameStatus::Started) implies 
+        pieces -> collect(x| x.colour=Colour::White) -> size() = 12
     inv CapturedPieceNotOnBoard:
         moves.capturedPiece.currentPlaceOnBoard -> collect(x | x) -> size= 0
     inv GameMovesContainsAllTheMovesOfPiecesInGame:
@@ -602,19 +602,29 @@ context Game
     inv PieceMustBeApartOfTheGame:
         moves -> forAll(c| pieces -> includes(c.piece))
     inv RedPiecesSetUpAtStart:
-        let redStartingRows = OrderedSet{'one','two','three'} in
-        let redRows = board.squares -> select(Rsquares | redStartingRows -> includes(Rsquares.row) and Rsquares.shade = 'Red') in
-        moves -> size() = 0 and self.gameStatus = 'Started' implies 
-                redRows -> forAll(x| x.pieceInSquare -> size() = 1 and x.pieceInSquare.colour = 'Red' )
+        let redStartingRows = OrderedSet{Row::one,Row::two,Row::three} in
+        let redRows = board.squares -> select(Rsquares | redStartingRows -> includes(Rsquares.row) and Rsquares.shade = Shade::Red) in
+        moves -> size() = 0 and self.gameStatus = GameStatus::Started implies 
+                redRows -> forAll(x| x.pieceInSquare -> size() = 1 and x.pieceInSquare.colour = Colour::Red )
     inv WhitePiecesSetUpAtStart:
-        let whiteStartingRows = OrderedSet{'six','seven','eight'} in
-        let whiteRows = board.squares -> select(Wsquares | whiteStartingRows -> includes(Wsquares.row) and Wsquares.shade = 'Red') in
-        moves -> size() = 0 and self.gameStatus = 'Started' implies 
-                whiteRows -> forAll(x| x.pieceInSquare -> size() = 1 and x.pieceInSquare.colour = 'White' )
+        let whiteStartingRows = OrderedSet{Row::six,Row::seven,Row::eight} in
+        let whiteRows = board.squares -> select(Wsquares | whiteStartingRows -> includes(Wsquares.row) and Wsquares.shade = Shade::Red) in
+        moves -> size() = 0 and self.gameStatus = GameStatus::Started implies 
+                whiteRows -> forAll(x| x.pieceInSquare -> size() = 1 and x.pieceInSquare.colour = Colour::White )
+    inv MovesMustAlternatesBetweenColors:
+       moves -> forAll(x,y| x.capturedPiece -> size() = 0 implies
+           x.piece.colour <> y.piece.colour)
+    inv WhenRedWinsByClearingBoard:
+        pieces-> collect(x| x.colour = Colour::White)-> size() = 0  and self.Draw = false implies 
+            result -> select(z| z.player=Colour::Red and z.isWinner = true) -> size() = 1
+    inv WhenWhiteWinsByClearingBoard:
+        pieces-> collect(x| x.colour = Colour::Red)-> size() = 0 implies self.Draw = false implies
+            result -> select(z| z.player= Colour::White and z.isWinner = true) -> size() = 1
+            
     
 
-
-
+            
+    
 
 
 
@@ -622,7 +632,7 @@ context Tournament
     inv TournamentGamesCannotBeDrawn:
     rounds.games->forAll(x| x.Draw = false)
     inv TournamentEndsWhenWinnerisFound:
-    self.status = 'Finished' implies user -> collect(
+    self.status = TournamentStatus::Finished implies user -> collect(
         x|x.userName)->includes(
             self.winner)
 
@@ -633,8 +643,8 @@ context Board
         a.row <> b.row and a.column<>b.column))
     inv ExactlyOneRowAndColumnForEachSquare:
     
-    let sRow  = Set{'one','two','three','four','five','six','seven','eight'} in
-    let sColumn = Set{'a','b','c','d','e','f','g','h'} in
+    let sRow  = Set{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+    let sColumn = Set{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
 
     sRow -> forAll( k| 
     sColumn -> forAll(m| squares -> select(s| 
@@ -653,39 +663,60 @@ context Piece
     inv CapturedPieceCannotBePromotedPiece:
         king -> size() = 1 implies self.currentPlaceOnBoard -> size() = 1
     inv aPieceThatIsNotAKingOnlyMovesDiagonally:
-        king -> size() = 0 implies pattern-> forAll(x| x.patternType = 'OneSquareDiagonally' )
+        king -> size() = 0 implies pattern-> forAll(x| x.patternType = Pattern::OneSquareDiagonally )
     inv squareMustBeEmptyBeforeMoving:
         pMoves -> forAll(x| x.destinationSquare -> forAll (c| c.pieceInSquare -> size() = 0))  
+    inv RedPieceMustMoveUpOneRowAndToAColumnToTheLeftOrRightDiagonally:
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        pMoves -> forAll(x| x.capturedPiece -> size() = 0) and self <> king and self.colour = Colour::Red implies 
+        pMoves -> forAll(x,y| sRow -> indexOf(y.destinationSquare->last().row) = sRow ->indexOf(x.destinationSquare->last().row)+1 and 
+          (sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) + 1 or
+          sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) - 1))
+
+    inv WhitePieceMustMoveDownOneRowAndToAColumnLeftOrRightDiagonally:
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        pMoves -> forAll(x| x.capturedPiece -> size() = 0) and self <> king and self.colour = Colour::White implies 
+        pMoves -> forAll(x,y| sRow -> indexOf(y.destinationSquare->last().row) = sRow ->indexOf(x.destinationSquare->last().row)-1 and 
+          (sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) + 1 or
+          sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) - 1))
+    inv RedPieceBecomesKingWhenItHasBeenAtTheEndOfTheBoard:
+        self = king implies
+        pMoves -> collect(x| x.destinationSquare -> forAll(z|z.row = Row::eight) ) -> notEmpty()
+    inv WhitePieceBecomesKingWhenItHasBeenAtTheEndOfTheBoard:
+        self = king implies
+        pMoves -> collect(x| x.destinationSquare-> forAll(z|z.row = Row::one) ) -> notEmpty()
     
-
-
+        
+    
     
 
 context Board
     inv BottomRightSquareIsRed:
-        squares -> forAll(x | x.row = 'one' and x.column = 'a' implies x.shade = 'Red')
+        squares -> forAll(x | x.row = Row::one and x.column = Column::a implies x.shade = Shade::Red)
     inv AdjacentSquareWithSameRowDifferentShade:
-        let sColumn = OrderedSet{'a','b','c','d','e','f','g','h'} in
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
 
-        Set{'one','two','three','four','five','six','seven','eight'} -> forAll(r| 
+        Set{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} -> forAll(r| 
         squares -> select(
             s| s.row = r) -> forAll(
                 x,y| sColumn -> indexOf(x.column)+1 = sColumn -> indexOf(y.column) implies
                     x.shade<>y.shade)
         )
     inv AdjacentSquareWithSameColumnDifferentShade:
-        let sRow = OrderedSet{'one','two','three','four','five','six','seven','eight'} in
+        let sRow = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight}in
         
-        Set{'a','b','c','d','e','f','g','h'} -> forAll(r| 
+        Set{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} -> forAll(r| 
         squares -> select(
-            s| s.row = r) -> forAll(
+            s| s.column = r) -> forAll(
                 x,y| sRow -> indexOf(x.row)+1 = sRow -> indexOf(y.row) implies
                     x.shade<>y.shade)
         )
     inv ThereMustBe32RedSquare:
-        squares -> collect(x| x.shade = 'Red') -> size() = 32
-    inv ThereMustBe32BlckSquare:
-        squares -> collect(x| x.shade = 'Black') -> size() = 32
+        squares -> collect(x| x.shade=Shade::Red) -> size() = 32
+    inv ThereMustBe32WhiteSquares:
+        squares -> collect(x| x.shade=Shade::White) -> size() = 32
 
         
     
