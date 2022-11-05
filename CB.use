@@ -172,8 +172,8 @@ end
 
 class Tournament 
 attributes 
- nbrOfPlayers: 30
- nbrOfMatches: 15
+ nbrOfPlayers: Integer init:30
+ nbrOfMatches: Integer init:15
  status: TournamentStatus
  winner: String derived: ''
 end
@@ -775,34 +775,36 @@ context Game
             
             let redP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
             let whiteP = pieces -> collect(x| x.king -> size() = 1 and x.colour=Colour::Red)->size() in
+            let lastPiece  = moves -> select(x|x.capturedPiece->size()>0)->last().capturedPiece -> collect(x|x)->asOrderedSet()-> last().colour in 
 
-            round -> size() > 0 and timer = 15 and redP < whiteP implies
+            round -> size() > 0 and timer = 15 and redP = whiteP implies
+
+            result -> collect(f| f.player <> lastPiece and f.isWinner = true) -> size() = 1
+        
+        inv canOnlyBeARadomGameForOneModeAtAtATime:
+            randomMatch -> size() = 1 implies
+            acceptedInvite ->size() = 0 and round ->size() = 0
+        
+        inv canOnlyBeAInvitedGameForOneModeAtAtATime:
+            acceptedInvite-> size() = 1 implies
+            randomMatch ->size() = 0 and round ->size() = 0
+        
+        inv canOnlyBeATournamentGameForOneModeAtAtATime:
+            round-> size() > 0 implies
+            randomMatch ->size() = 0 and round ->size() = 0
+        
+        
+
             
-            result -> collect(f| f.player = Colour::White and f.isWinner = true) -> size() = 1
-        
-        
-
-
-    
-
-        
-
-
-    
-        
-
-
-        
-    
 
             
-    
-
-
+            
+            
 
 context Tournament
     inv TournamentGamesCannotBeDrawn:
     rounds.games->forAll(x| x.Draw = false)
+
     inv TournamentEndsWhenWinnerisFound:
     self.status = TournamentStatus::Finished implies user -> collect(
         x|x.userName)->includes(
@@ -825,6 +827,11 @@ context Board
         )
 
 context Move
+    SquareExistsThatPieceIsMovingOnto:
+    let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+    let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+    destinationSquare -> forAll(x| sRow -> includes(x.row) and sColumn -> includes(x.column))
+
 
 
 
@@ -852,9 +859,6 @@ context Piece
         pMoves -> forAll(x,y| sRow -> indexOf(y.destinationSquare->last().row) = sRow ->indexOf(x.destinationSquare->last().row)-1 and 
           (sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) + 1 or
           sColumn -> indexOf(y.destinationSquare->last().column) = sColumn -> indexOf(x.destinationSquare->last().column) - 1))
-
-
-
     inv RedPieceBecomesKingWhenItHasBeenAtTheEndOfTheBoard:
         self = king implies
         pMoves -> collect(x| x.destinationSquare -> forAll(z|z.row = Row::eight) ) -> notEmpty()
