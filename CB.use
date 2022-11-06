@@ -102,22 +102,17 @@ class User
 attributes 
    name: String
    userName: String
-   DOB: Date
+   age: Integer
    email: String
    password: String
    record: Integer derived: 0
-   userStatus: UserStatus
-   title: UserTitle
 end
 
 class Game < Subject
 attributes
- gameResult: GameResult
-timer: Integer
+ timer: Integer
  gameStatus: GameStatus
- gameCreatedOn: DateTime
- Draw: Boolean
-
+ Draw: Boolean init: false
 end
 
 class LeaderBoard < Observer
@@ -126,30 +121,30 @@ end
 
 class Request
 attributes
-    requestStatus: RequestStatus
+    requestStatus: RequestStatus init: RequestStatus::AwaitingResponse
     date: DateTime
 end
 
 class Blocked
 attributes
-    isBlocked: Boolean derived: false   
+    isBlocked: Boolean init:false
 end
 
 class Preference
 attributes 
-   preferences: Tuple(searchPreference: SearchPreference,userStatus: UserStatus)
+   preferences: Tuple(searchPreference: SearchPreference,userStatus: UserStatus) init: Tuple{searchPreference: SearchPreference::Everyone,userStatus: UserStatus::Available}
 end
 
 class RandomMatch
 attributes
- searchQueue: DateTime
+ searchQueue: Integer init: 15
  regionMatchFound: Boolean derived:false
- searchProgress:SearchProgress 
+ searchProgress:SearchProgress init: SearchProgress::Ongoing
 end
 
 class GameInvite
 attributes 
-    inviteSatus: InviteStatus 
+    inviteSatus: InviteStatus init: InviteStatus::AwaitingResponse 
     Timer: DateTime
 end
 
@@ -161,20 +156,19 @@ end
 
 class CheckersBlitz 
 attributes
-    CurrentDate: DateTime
 end
 
 
 class Region
 attributes
-    identity:RegionIdentity
+    identity:RegionIdentity init: RegionIdentity::NA
 end
 
 class Tournament 
 attributes 
  nbrOfPlayers: Integer init:30
  nbrOfMatches: Integer init:15
- status: TournamentStatus
+ status: TournamentStatus init: TournamentStatus::Intialized
  winner: String derived: ''
 end
 
@@ -193,17 +187,10 @@ end
 class King < Piece
 end
 
-class MovePattern <OneSquareAny
+class MovePattern 
     attributes 
         patternType: Pattern
 end
-
-class OneSquareAny < OneSquareUpDiagonally
-end
-
-class OneSquareUpDiagonally
-end
-
 
 
 class Square
@@ -306,9 +293,8 @@ enum UserStatus{
 }
 
 enum Pattern{
-    OneSquareUp,
-    OneSquareAny,
-    OneSquareDiagonally
+    OneOrTwoSquareDiagonallyForward,
+    OneOrTwoSquareDiagonallyForwardOrBackward
 }
 
 enum Row{
@@ -327,7 +313,7 @@ association sets
 end
 
 
-composition has
+aggregation has
     between 
     Board[1] role board
     Square[64] role squares
@@ -339,7 +325,7 @@ association pieceLocation
     Piece[0..1] role pieceInSquare
 end
 
-composition initialise
+aggregation initialise
     between
     Game[1] role game
     Board[1] role board
@@ -431,7 +417,7 @@ between
     GameInvite[*] role sentInvite ordered
 end
 
-association reciveGameInvite
+association receiveGameInvite
 between
     User[1] role inviteRecipiant
     GameInvite[*] role receivedInvite ordered
@@ -532,8 +518,7 @@ context User
     inv passwordGreater:
         self.password.size()>11
     inv AgeOver12:
-        let bYear = self.DOB.getYear() in 
-        (bYear-2022) >11
+        self.age > 11 
     inv  CannotBeApartOfYourOwnFriendsList:
         recievedRequest->select(x|x.requestStatus = RequestStatus::Accepted) -> forAll(z| z.sender-> excludes(self))
     inv max7500Friends:
@@ -570,6 +555,7 @@ context User
              z| blockedUsers.blocked -> excludes(
                 z.selectedUser)
                 )
+    
 
 context CheckersBlitz
     inv UniqueUserNames:
@@ -827,7 +813,7 @@ context Board
         )
 
 context Move
-    SquareExistsThatPieceIsMovingOnto:
+    inv SquareExistsThatPieceIsMovingOnto:
     let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
     let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
     destinationSquare -> forAll(x| sRow -> includes(x.row) and sColumn -> includes(x.column))
@@ -842,7 +828,7 @@ context Piece
     inv CapturedPieceCannotBePromotedPiece:
         king -> size() = 1 implies self.currentPlaceOnBoard -> size() = 1
     inv aPieceThatIsNotAKingOnlyMovesDiagonally:
-        king -> size() = 0 implies pattern-> forAll(x| x.patternType = Pattern::OneSquareDiagonally )
+        king -> size() = 0 implies pattern-> forAll(x| x.patternType = Pattern::OneOrTwoSquareDiagonallyForward )
     inv squareMustBeEmptyBeforeMoving:
         pMoves -> forAll(x| x.destinationSquare -> forAll (c| c.pieceInSquare -> size() = 0))  
     inv RedPieceMustMoveUpOneRowAndToAColumnToTheLeftOrRightDiagonally:
