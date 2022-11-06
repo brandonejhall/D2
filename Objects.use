@@ -37,8 +37,8 @@
 !set p2.preferences := Tuple{searchPreference: SearchPreference::Everyone,userStatus: UserStatus::Available}
 
 !create p11:Preference
-!set p11.preferences := Tuple{searchPreference: SearchPreference::Everyone,userStatus: UserStatus::DoNotDisturb}
-!insert (p1,p11) into changesTo
+!set p11.preferences := Tuple{searchPreference: SearchPreference::Friends,userStatus: UserStatus::Available}
+!insert (p1,p1) into changesTo
 
 
 !create b1: Blocked
@@ -81,3 +81,19 @@
 !set s1.shade := White
 
 !insert (g1,b1) into initialise
+
+!create res2: Result between (u2,g1)
+!create res1: Result between (u1,g1)
+
+!set res1.player := Colour::Red
+!set res2.player := Colour::White
+!set res2.isWinner := false
+!set res1.isWinner := false
+!set res1.quitGame := false
+!set res1.quitGame := false
+
+!create rm1: RandomMatch 
+!set rm1.searchQueueSeconds := 12
+!set rm1.regionMatchFound := false
+!set rm1.searchProgress := SearchProgress::Ongoing
+!insert (u1,rm1) into requestRMatch

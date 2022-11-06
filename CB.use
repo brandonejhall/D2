@@ -137,8 +137,8 @@ end
 
 class RandomMatch
 attributes
- searchQueue: Integer init: 15
- regionMatchFound: Boolean derived:false
+ searchQueueSeconds: Integer init: 15
+ regionMatchFound: Boolean init:false
  searchProgress:SearchProgress init: SearchProgress::Ongoing
 end
 
@@ -208,11 +208,12 @@ end
 
 associationclass Result 
     between
-    User[2] role users
-    Game[*] role match ordered
+    User[2] role users 
+    Game[*] role match ordered 
     attributes
         player:Colour
         isWinner:Boolean
+        quitGame:Boolean
 end
 
 associationclass UserArrangement
@@ -383,13 +384,13 @@ end
 association sends
     between
     User[1] role sender
-    Request[*] role sentRequest
+    Request[*] role sentFriendRequest
 end
 
 association respondsTo
     between
     User[1] role receiver
-    Request[*] role recievedRequest
+    Request[*] role recievedFriendRequest
 end
 
 association updatesBlockedStatus
@@ -409,6 +410,7 @@ association observes
     Observer[*] role observer
     Subject[*] role subject
 end
+
 
 
 association sendGameInvite
@@ -456,7 +458,7 @@ end
 association RandomSelects
 between 
     RandomMatch[*] role foundMatchUp
-    User[1] role selectedUser
+    User[2] role selectedUser
 end
 
 association joinTournament
@@ -496,13 +498,13 @@ end
 /* ----------------------------------------------------------------------
     CONSTRAINTS
 ---------------------------------------------------------------------- */
-constraints
+constraints 
 
 context User 
     inv BlockedUsersCannotBeAcceptedAsFriends:
     updatedBlockStatus -> forAll(a | 
         a.isBlocked = true implies( 
-            recievedRequest -> select(z| z.requestStatus = RequestStatus::Accepted) -> excludesAll(a.blocked.sentRequest->select(x|x.receiver = self))
+            recievedFriendRequest -> select(z| z.requestStatus = RequestStatus::Accepted) -> excludesAll(a.blocked.sentFriendRequest->select(x|x.receiver = self))
             )
         )
     inv CannotBlockYourself:
@@ -512,7 +514,7 @@ context User
             )
         )
     inv CannotSendRequestToSelf:
-        sentRequest -> forAll(a|
+        sentFriendRequest -> forAll(a|
             a.receiver<>self
             )
     inv passwordGreater:
@@ -520,17 +522,17 @@ context User
     inv AgeOver12:
         self.age > 11 
     inv  CannotBeApartOfYourOwnFriendsList:
-        recievedRequest->select(x|x.requestStatus = RequestStatus::Accepted) -> forAll(z| z.sender-> excludes(self))
+        recievedFriendRequest->select(x|x.requestStatus = RequestStatus::Accepted) -> forAll(z| z.sender-> excludes(self))
     inv max7500Friends:
-         sentRequest -> collect(sR | sR.requestStatus = RequestStatus::Accepted) -> size() < 7501
+         sentFriendRequest -> collect(sR | sR.requestStatus = RequestStatus::Accepted) -> size() < 7501
 
     inv CannotSendFriendRequestWithAPendingRequest:
-        sentRequest.receiver -> forAll( x | sentRequest -> collect(
+        sentFriendRequest.receiver -> forAll( x | sentFriendRequest -> collect(
             O | O.requestStatus = RequestStatus::AwaitingResponse and O.receiver = x) -> size() = 1
         )
     inv CannotSendFriendRequestToFriends:
-        sentRequest -> forAll(x | x.requestStatus = RequestStatus::AwaitingResponse implies 
-        sentRequest -> select(c|c.requestStatus = RequestStatus::Accepted) -> forAll(z| z.receiver <> x.receiver))
+        sentFriendRequest -> forAll(x | x.requestStatus = RequestStatus::AwaitingResponse implies 
+        sentFriendRequest -> select(c|c.requestStatus = RequestStatus::Accepted) -> forAll(z| z.receiver <> x.receiver))
         
     inv CannotSendGameInviteToUserInGame:
         sentInvite -> forAll(x| x.inviteSatus = InviteStatus::AwaitingResponse implies
@@ -540,7 +542,7 @@ context User
             x| x.searchProgress = SearchProgress::Ongoing implies match -> collect(
                 x| x.gameStatus = GameStatus::Ongoing) -> size() = 0)
     inv CannotSendFriendRequestWhenBlocked:
-        sentRequest ->forAll(v | v.requestStatus = RequestStatus::AwaitingResponse 
+        sentFriendRequest ->forAll(v | v.requestStatus = RequestStatus::AwaitingResponse 
             implies 
                 v.receiver.updatedBlockStatus -> select( 
                     x|x.isBlocked = true) ->forAll (z| z.blocked<>self)
@@ -552,9 +554,12 @@ context User
         let blockedUsers = updatedBlockStatus -> select(
             x| x.isBlocked = true) in
         MatchSearch -> forAll(
-             z| blockedUsers.blocked -> excludes(
+             z| blockedUsers.blocked -> excludesAll(
                 z.selectedUser)
                 )
+    inv UserLosesWhenTheyQuitTheGame:
+        result -> forAll(x| x.quitGame = true implies
+        x.match.gameStatus = GameStatus::Finished and x.isWinner = false)
     
 
 context CheckersBlitz
@@ -883,6 +888,5 @@ context Board
         squares -> collect(x| x.shade=Shade::White) -> size() = 32
 
         
-    
 
-        
+
