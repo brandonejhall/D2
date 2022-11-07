@@ -118,7 +118,10 @@ end
 class LeaderBoard < Observer
 end
 
-
+class Record 
+attributes
+    record : Integer derived:0
+end
 class Request
 attributes
     requestStatus: RequestStatus init: RequestStatus::AwaitingResponse
@@ -150,7 +153,7 @@ end
 
 class Rounds
 attributes  
-    numberOfMatches: Integer derived:8
+    numberOfMatches: Integer init:8
 end
 
 
@@ -192,6 +195,11 @@ class MovePattern
         patternType: Pattern
 end
 
+association userRecordArrangement
+    between 
+    User[1] role users
+    Record[1] role leaderboard
+end
 
 class Square
    attributes
@@ -216,12 +224,10 @@ associationclass Result
         quitGame:Boolean
 end
 
-associationclass UserArrangement
+association UserArrangement
     between 
     LeaderBoard[1] role leaderboard
-    User[*] role users ordered
-    attributes
-    placements: Integer derived:0
+    Record[*] role userRecord ordered
 end
 
 enum RequestStatus{
@@ -384,13 +390,13 @@ end
 association sends
     between
     User[1] role sender
-    Request[*] role sentFriendRequest
+    Request[*] role sentRequest
 end
 
 association respondsTo
     between
     User[1] role receiver
-    Request[*] role recievedFriendRequest
+    Request[*] role recievedRequest
 end
 
 association updatesBlockedStatus
@@ -504,7 +510,7 @@ context User
     inv BlockedUsersCannotBeAcceptedAsFriends:
     updatedBlockStatus -> forAll(a | 
         a.isBlocked = true implies( 
-            recievedFriendRequest -> select(z| z.requestStatus = RequestStatus::Accepted) -> excludesAll(a.blocked.sentFriendRequest->select(x|x.receiver = self))
+            recievedRequest -> select(z| z.requestStatus = RequestStatus::Accepted) -> excludesAll(a.blocked.sentRequest->select(x|x.receiver = self))
             )
         )
     inv CannotBlockYourself:
@@ -514,7 +520,7 @@ context User
             )
         )
     inv CannotSendRequestToSelf:
-        sentFriendRequest -> forAll(a|
+        sentRequest -> forAll(a|
             a.receiver<>self
             )
     inv passwordGreater:
@@ -522,17 +528,17 @@ context User
     inv AgeOver12:
         self.age > 11 
     inv  CannotBeApartOfYourOwnFriendsList:
-        recievedFriendRequest->select(x|x.requestStatus = RequestStatus::Accepted) -> forAll(z| z.sender-> excludes(self))
+        recievedRequest->select(x|x.requestStatus = RequestStatus::Accepted) -> forAll(z| z.sender-> excludes(self))
     inv max7500Friends:
-         sentFriendRequest -> collect(sR | sR.requestStatus = RequestStatus::Accepted) -> size() < 7501
+         sentRequest -> collect(sR | sR.requestStatus = RequestStatus::Accepted) -> size() < 7501
 
     inv CannotSendFriendRequestWithAPendingRequest:
-        sentFriendRequest.receiver -> forAll( x | sentFriendRequest -> collect(
+        sentRequest.receiver -> forAll( x | sentRequest -> collect(
             O | O.requestStatus = RequestStatus::AwaitingResponse and O.receiver = x) -> size() = 1
         )
     inv CannotSendFriendRequestToFriends:
-        sentFriendRequest -> forAll(x | x.requestStatus = RequestStatus::AwaitingResponse implies 
-        sentFriendRequest -> select(c|c.requestStatus = RequestStatus::Accepted) -> forAll(z| z.receiver <> x.receiver))
+        sentRequest -> forAll(x | x.requestStatus = RequestStatus::AwaitingResponse implies 
+        sentRequest -> select(c|c.requestStatus = RequestStatus::Accepted) -> forAll(z| z.receiver <> x.receiver))
         
     inv CannotSendGameInviteToUserInGame:
         sentInvite -> forAll(x| x.inviteSatus = InviteStatus::AwaitingResponse implies
@@ -542,7 +548,7 @@ context User
             x| x.searchProgress = SearchProgress::Ongoing implies match -> collect(
                 x| x.gameStatus = GameStatus::Ongoing) -> size() = 0)
     inv CannotSendFriendRequestWhenBlocked:
-        sentFriendRequest ->forAll(v | v.requestStatus = RequestStatus::AwaitingResponse 
+        sentRequest ->forAll(v | v.requestStatus = RequestStatus::AwaitingResponse 
             implies 
                 v.receiver.updatedBlockStatus -> select( 
                     x|x.isBlocked = true) ->forAll (z| z.blocked<>self)
@@ -697,7 +703,7 @@ context Game
         result -> collect(x | x.player= Colour::White and x.isWinner = true) -> size() = 1
     
 
-        inv WhenNoHasNoPlaceToMoveOnBoard:
+        inv WhenNoOneHasNoPlaceToMoveOnBoard:
         let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
         let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
         let whiteP = pieces -> select(x| x.colour = Colour::White and x.currentPlaceOnBoard-> size() =  1 and x<>x.king) in
@@ -856,13 +862,50 @@ context Piece
     inv WhitePieceBecomesKingWhenItHasBeenAtTheEndOfTheBoard:
         self = king implies
         pMoves -> collect(x| x.destinationSquare-> forAll(z|z.row = Row::one) ) -> notEmpty()
+    inv EmptySpaceBehindPieceBeingCapturedforRedOrKing:
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        
+        self=king or colour = Colour::Red implies
+        
+        pMoves -> forAll (x| x.capturedPiece -> size() > 0 implies
+            
+            x.capturedPiece->forAll(m| let capturedPieceLastSquare = m.pMoves -> last().destinationSquare->last() in
+            
+            x.destinationSquare -> exists(v| v.row =  sRow -> at(sRow -> indexOf(capturedPieceLastSquare.row)+1) and 
+                    
+                    (v.column = sColumn -> at(sColumn -> indexOf(capturedPieceLastSquare.column)-1) or 
+                    
+                    v.column = sColumn -> at(sColumn -> indexOf(capturedPieceLastSquare.column)+1) )  
+            
+            
+            )))
+        inv EmptySpaceBehindPieceBeingCapturedforWhiteOrKing:
+        let sRow  = OrderedSet{Row::one,Row::two,Row::three,Row::four,Row::five,Row::six,Row::seven,Row::eight} in
+        let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
+        
+        self=king or colour = Colour::Red implies
+        
+        pMoves -> forAll (x| x.capturedPiece -> size() > 0 implies
+            
+            x.capturedPiece->forAll(m| let capturedPieceLastSquare = m.pMoves -> last().destinationSquare->last() in
+            
+            x.destinationSquare -> exists(v| v.row =  sRow -> at(sRow -> indexOf(capturedPieceLastSquare.row)-1) and 
+                    
+                    (v.column = sColumn -> at(sColumn -> indexOf(capturedPieceLastSquare.column)-1) or 
+                    
+                    v.column = sColumn -> at(sColumn -> indexOf(capturedPieceLastSquare.column)+1) )  
+            
+            
+            )))
+
     
         
     
     
 
 context Board
-    inv BottomRightSquareIsRed:
+    inv BottomLeftSquareIsRed:
         squares -> forAll(x | x.row = Row::one and x.column = Column::a implies x.shade = Shade::Red)
     inv AdjacentSquareWithSameRowDifferentShade:
         let sColumn = OrderedSet{Column::a,Column::b,Column::c,Column::d,Column::e,Column::f,Column::g,Column::h} in
@@ -888,5 +931,23 @@ context Board
         squares -> collect(x| x.shade=Shade::White) -> size() = 32
 
         
+context Preference
+inv NewStatusAndOldStatusCannotBeTheSame:
+    self.newStatus -> size() = 1 implies
+        self <> newStatus
+
+context Request
+   inv receivercannotbeyourself: self.sender <> self.receiver
+
+context User
+    inv canBeApartOfOnlyOneActiveTournament:
+        tournament -> collect(x| x.status = TournamentStatus::Ongoing) -> size() = 1
+
+
+    
+context Tournament
+    inv NoDrawnGamesInTournament: 
+    
+    rounds.games->forAll(tg | tg.Draw = false)
 
 

@@ -1,0 +1,9 @@
+!create CB:CheckersBlitz
+
+!create u1:User
+
+!set u1.name := 'John'
+!set u1.userName := 'JBrown'    
+!set u1.age := 16
+!set u1.email := 'jbrown@gmail.com'
+!set u1.password := 'password1#'

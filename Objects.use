@@ -2,6 +2,20 @@
 
 !create u1:User
 !create u2:User
+!create u3:User
+!create u4:User
+!create u5:User
+!create u6:User
+!create u7:User
+!create u8:User
+!create u9:User
+!create u10:User
+!create u11:User
+!create u12:User
+!create u13:User
+!create u14:User
+!create u15:User
+!create u16:User
 
 !set u1.name := 'John'
 !set u1.userName := 'JBrown'    
@@ -15,8 +29,143 @@
 !set u2.email := 'jjbrown@gmail.com'
 !set u2.password := 'Password3#'
 
+!set u3.name := 'Jack'
+!set u3.userName := 'JJJBrown'    
+!set u3.age := 16
+!set u3.email := 'jjjbrown@gmail.com'
+!set u3.password := 'password1#'
+
+!set u4.name := 'Jake'
+!set u4.userName := 'JackBrown'    
+!set u4.age := 15
+!set u4.email := 'jackbrown@gmail.com'
+!set u4.password := 'Password3#'
+
+!set u5.name := 'Bob'
+!set u5.userName := 'Bob'    
+!set u5.age := 16
+!set u5.email := 'bob@gmail.com'
+!set u5.password := 'password1#'
+
+!set u6.name := 'Tom'
+!set u6.userName := 'TomBrown'    
+!set u6.age := 15
+!set u6.email := 'Tbrown@gmail.com'
+!set u6.password := 'Password3#'
+
+!set u7.name := 'Harry'
+!set u7.userName := 'Harrry'    
+!set u7.age := 16
+!set u7.email := 'harry@gmail.com'
+!set u7.password := 'password1#'
+
+!set u8.name := 'nathan'
+!set u8.userName := 'Nath'    
+!set u8.age := 15
+!set u8.email := 'nathan@gmail.com'
+!set u8.password := 'Password3#'
+
+!set u9.name := 'Nick'
+!set u9.userName := 'Niick'    
+!set u9.age := 16
+!set u9.email := 'nick@gmail.com'
+!set u9.password := 'password1#'
+
+!set u10.name := 'Fin'
+!set u10.userName := 'Finny'    
+!set u10.age := 15
+!set u10.email := 'fin@gmail.com'
+!set u10.password := 'Password3#'
+
+!set u11.name := 'fay'
+!set u11.userName := 'fay'    
+!set u11.age := 16
+!set u11.email := 'fay@gmail.com'
+!set u11.password := 'password1#'
+
+!set u12.name := 'Bill'
+!set u12.userName := 'JBilly'    
+!set u12.age := 15
+!set u12.email := 'billy@gmail.com'
+!set u12.password := 'Password3#'
+
+!set u13.name := 'Tat'
+!set u13.userName := 'Timmy'    
+!set u13.age := 16
+!set u13.email := 'gooal@gmail.com'
+!set u13.password := 'password1#'
+
+!set u14.name := 'Reda'
+!set u14.userName := 'asa'    
+!set u14.age := 15
+!set u14.email := 'aljo@gmail.com'
+!set u14.password := 'Password3#'
+
+!set u15.name := 'baker'
+!set u15.userName := 'back'    
+!set u15.age := 16
+!set u15.email := 'ben@gmail.com'
+!set u15.password := 'password1#'
+
+!set u16.name := 'Benjamin'
+!set u16.userName := 'Fury'    
+!set u16.age := 15
+!set u16.email := 'Bfury@gmail.com'
+!set u16.password := 'Password3#'
+
 !insert (CB,u1) into joins
 !insert (CB,u2) into joins
+!insert (CB,u3) into joins
+!insert (CB,u4) into joins
+!insert (CB,u5) into joins
+!insert (CB,u6) into joins
+!insert (CB,u7) into joins
+!insert (CB,u8) into joins
+!insert (CB,u9) into joins
+!insert (CB,u10) into joins
+!insert (CB,u11) into joins
+!insert (CB,u12) into joins
+!insert (CB,u13) into joins
+!insert (CB,u14) into joins
+!insert (CB,u15) into joins
+!insert (CB,u16) into joins
+
+
+!create p1:Preference
+!create p2:Preference
+!create p3:Preference
+!create p4:Preference
+!create p5:Preference
+!create p6:Preference
+!create p7:Preference
+!create p8:Preference
+!create p9:Preference
+!create p10:Preference
+!create p11:Preference
+!create p12:Preference
+!create p13:Preference
+!create p14:Preference
+!create p15:Preference
+!create p16:Preference
+
+
+!create r1:Region
+!create r2:Region
+!create r3:Region
+!create r4:Region
+!create r5:Region
+!create r6:Region
+!create r7:Region
+!create r8:Region
+!create r9:Region
+!create r10:Region
+!create r11:Region
+!create r12:Region
+!create r13:Region
+!create r14:Region
+!create r15:Region
+!create r16:Region
+
 
 !create p1:Preference
 !create p2:Preference
@@ -25,16 +174,96 @@
 
 !insert (u1,p1) into sets
 !insert (u2,p2) into sets
+!insert (u3,p3) into sets
+!insert (u4,p4) into sets
+!insert (u5,p5) into sets
+!insert (u6,p6) into sets
+!insert (u7,p7) into sets
+!insert (u8,p8) into sets
+!insert (u9,p9) into sets
+!insert (u10,p10) into sets
+!insert (u11,p11) into sets
+!insert (u12,p12) into sets
+!insert (u13,p13) into sets
+!insert (u14,p14) into sets
+!insert (u15,p15) into sets
+!insert (u16,p16) into sets
 
 !insert (u1,r1) into regionSelect
 !insert (u2,r2) into regionSelect
+!insert (u3,r3) into regionSelect
+!insert (u4,r4) into regionSelect
+!insert (u5,r5) into regionSelect
+!insert (u6,r6) into regionSelect
+!insert (u7,r7) into regionSelect
+!insert (u8,r8) into regionSelect
+!insert (u9,r9) into regionSelect
+!insert (u10,r10) into regionSelect
+!insert (u11,r11) into regionSelect
+!insert (u12,r12) into regionSelect
+!insert (u13,r13) into regionSelect
+!insert (u14,r14) into regionSelect
+!insert (u15,r15) into regionSelect
+!insert (u16,r16) into regionSelect
+
+
 
 !set r1.identity := RegionIdentity::NA
 !set r2.identity := RegionIdentity::NA
+!set r3.identity := RegionIdentity::NA
+!set r4.identity := RegionIdentity::NA
+!set r5.identity := RegionIdentity::NA
+!set r6.identity := RegionIdentity::NA
+!set r7.identity := RegionIdentity::NA
+!set r8.identity := RegionIdentity::NA
+!set r9.identity := RegionIdentity::NA
+!set r10.identity := RegionIdentity::NA
+!set r11.identity := RegionIdentity::NA
+!set r12.identity := RegionIdentity::NA
+!set r13.identity := RegionIdentity::NA
+!set r14.identity := RegionIdentity::NA
+!set r15.identity := RegionIdentity::NA
+!set r16.identity := RegionIdentity::NA
 
+!insert (u1,r1) into regionSelect
+!insert (u2,r2) into regionSelect
+!insert (u3,r3) into regionSelect
+!insert (u4,r4) into regionSelect
+!insert (u5,r5) into regionSelect
+!insert (u6,r6) into regionSelect
+!insert (u7,r7) into regionSelect
+!insert (u8,r8) into regionSelect
+!insert (u9,r9) into regionSelect
+!insert (u10,r10) into regionSelect
+!insert (u11,r11) into regionSelect
+!insert (u12,r12) into regionSelect
+!insert (u13,r13) into regionSelect
+!insert (u14,r14) into regionSelect
+!insert (u15,r15) into regionSelect
+!insert (u16,r16) into regionSelect
+
+!create t1:Tournament
+!insert (u1,t1) into joinTournament
+!insert (u2,t1) into joinTournament
+!insert (u3,t1) into joinTournament
+!insert (u4,t1) into joinTournament
+!insert (u5,t1) into joinTournament
+!insert (u6,t1) into joinTournament
+!insert (u7,t1) into joinTournament
+!insert (u8,t1) into joinTournament
+!insert (u9,t1) into joinTournament
+!insert (u10,t1) into joinTournament
+!insert (u11,t1) into joinTournament
+!insert (u12,t1) into joinTournament
+!insert (u13,t1) into joinTournament
+!insert (u14,t1) into joinTournament
+!insert (u15,t1) into joinTournament
+!insert (u16,t1) into joinTournament
 
 !set p1.preferences := Tuple{searchPreference: SearchPreference::Everyone,userStatus: UserStatus::Available}
 !set p2.preferences := Tuple{searchPreference: SearchPreference::Everyone,userStatus: UserStatus::Available}
+
+!set p1.preferences := Tuple{searchPreference: SearchPreference::Everyone,userStatus: UserStatus::Available}
 
 !create p11:Preference
 !set p11.preferences := Tuple{searchPreference: SearchPreference::Friends,userStatus: UserStatus::Available}
@@ -93,7 +322,70 @@
 !set res1.quitGame := false
 
 !create rm1: RandomMatch 
-!set rm1.searchQueueSeconds := 12
+!set rm1.searchQueueSeconds := 30
 !set rm1.regionMatchFound := false
 !set rm1.searchProgress := SearchProgress::Ongoing
 !insert (u1,rm1) into requestRMatch
+!insert (u2,rm1) into requestRMatch
+
+!insert (rm1,u1) into RandomSelects
+!insert (rm1,u2) into RandomSelects
+
+!insert (rm1,g1) into createRMatch
+
+
+
+!create m1:Move
+
+!create round1:Rounds
+!create round2:Rounds
+!create round3:Rounds
+!create round4:Rounds
+
+
+!insert (t1,round1) into tournamentRounds
+
+!insert (t1,round2) into tournamentRounds
+!insert (t1,round3) into tournamentRounds
+!insert (t1,round4) into tournamentRounds
+
+!set round1.numberOfMatches := 8
+!set round2.numberOfMatches := 4
+!set round3.numberOfMatches := 2
+!set round4.numberOfMatches := 1
+
+!insert (round1,g) into roundGames
+!create res1: Result between (u1,g1)
+!create res2: Result between (u2,g1)
+!create res3: Result between (u3,g2)
+!create res4: Result between (u4,g2)
+!create res5: Result between (u5,g3)
+!create res6: Result between (u6,g3)
+!create res7: Result between (u7,g4)
+!create res8: Result between (u8,g4)
+!create res9: Result between (u9,g5)
+!create res10: Result between (u10,g5)
+!create res11: Result between (u11,g6)
+!create res12: Result between (u12,g6)
+!create res13: Result between (u13,g7)
+!create res14: Result between (u14,g7)
+!create res15: Result between (u15,g8)
+!create res16: Result between (u16,g8)
+
+
+!create req1: Request
+!insert (u1,req1) into sends
+!insert (u2,req1) into respondsTo
+
+!set req1.requestStatus := RequestStatus::Rejected
+
+
+!create t1:DateTime   
+!set t1.hour := 0
+!set t1.second := 0
+!set t1.minute := 0
+!set t1.day := 5
+!set t1.month := 11
+!set t1.year :=2022
+
+!set req1.date := t1
