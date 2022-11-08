@@ -1,1 +1,5 @@
-Before: Two user objects have been created where a user object 
+Before: Two user objects have been created where one user object u1 is sending a friend request to u2 this object represents before u2 responds 
+to u1's request where it can either reject or accept this request
+
+After: u2 in this scenario responds by accepting the requesting both making each user now friends with each other the request status 
+changes to accepted in this object model signifying the relationship has been created

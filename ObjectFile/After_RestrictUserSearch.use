@@ -19,6 +19,17 @@
 !insert (u1,r1) into regionSelect
 
 
+!create t1:DateTime   
+!set t1.hour := 0
+!set t1.second := 0
+!set t1.minute := 0
+!set t1.day := 5
+!set t1.month := 11
+!set t1.year :=2022
+
+!set req1.date := t1
+
+
 !insert (u1,rec1) into RecordUpdate
 !create p11:Preference
 !set p11.preferences := Tuple{searchPreference: SearchPreference::FriendsOfFriends,userStatus: UserStatus::Available}

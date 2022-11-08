@@ -1,0 +1,8 @@
+Before :
+
+Before a game is found two register user objects in this case u1 and u2 are searching for a random match both u1 and u2's region matched and are the only two looking
+for a match at this time. The platform will select these two based off their region and that they are both searching for a match
+
+After : The platform selects both users creating a selected user assocication where the search Queue seconds have been reduced to 30 from 20 
+meaning that 10 seconds had passed the region match found is true because both users have been found from the same region a random match assococation is created with a new game objects
+This game object then leads to the creation of a board object with pieces and square objects

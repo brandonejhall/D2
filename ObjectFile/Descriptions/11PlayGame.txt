@@ -1,0 +1,4 @@
+Before: All pieces have been initliased on the board in the correct place. The game status is currently started.
+
+After: the first move of the game is made by a red piece object pie 9 where it moves to squre s23 the new piece location of pie 9 is s23 
+where this move also is now apart of the game moves object aswell as the piece moves object.

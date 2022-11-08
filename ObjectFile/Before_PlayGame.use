@@ -1,0 +1,578 @@
+!create CB:CheckersBlitz
+!create u1:User
+!create u2:User
+
+!create p1:Preference
+!create r1:Region
+!create rec1:Record
+
+!create p2:Preference
+!create r2:Region
+!create rec2:Record
+
+
+!set u1.name := 'John'
+!set u1.userName := 'JBrown'    
+!set u1.age := 16
+!set u1.email := 'jbrown@gmail.com'
+!set u1.password := 'password1#'
+
+
+!set u2.name := 'Joan'
+!set u2.userName := 'JJBrown'    
+!set u2.age := 15
+!set u2.email := 'jjbrown@gmail.com'
+!set u2.password := 'Password3#'
+
+!set r1.identity := RegionIdentity::NA
+!set r2.identity := RegionIdentity::NA
+!insert (CB,u1) into joins
+!insert (CB,u2) into joins
+
+!insert (u1,p1) into sets
+!insert (u1,r1) into regionSelect
+
+!insert (u2,p2) into sets
+!insert (u2,r2) into regionSelect
+
+
+!insert (u1,rec1) into RecordUpdate
+
+!insert (u2,rec2) into RecordUpdate
+
+!create gi1: GameInvite
+!set gi1.inviteSatus := InviteStatus::AwaitingResponse
+!create t1:DateTime   
+!set t1.hour := 0
+!set t1.second := 0
+!set t1.minute := 2
+!set t1.day := 5
+!set t1.month := 11
+!set t1.year :=2022
+!set gi1.Timer := t1
+
+!insert (u1,gi1) into sendGameInvite
+!insert (u2,gi1) into receiveGameInvite
+
+
+!set gi1.inviteSatus := InviteStatus::Accepted
+
+!create g1:Game
+
+!create b1:Board
+
+!set g1.gameStatus := GameStatus::Started
+!set g1.timer := 0
+!set g1.Draw := false
+
+!insert (gi1,g1) into createsInvitedgame
+
+!insert (g1,b1)  into initialise
+
+!create l1:Leaderboard
+
+!insert (l1,g1) into observes
+
+
+!create res1: Result between (u1,g1)
+!create res2: Result between (u2,g1)
+
+!insert (l1,rec1) into UserArrangement
+!insert (l1,rec2) into UserArrangement
+
+
+
+!create s0:Square
+!set s0.column:= Column::a
+!set s0.row := Row::one
+!set s0.shade := Shade::Red
+!insert (b1,s0) into has
+!create pie1:Piece
+!set pie1.colour := Colour::Red
+!set pie1.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern1:MovePattern
+!set pattern1.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie1,pattern1) into movesLike
+!insert (s0,pie1) into pieceLocation
+!create s1:Square
+!set s1.column:= Column::b
+!set s1.row := Row::one
+!set s1.shade := Shade::White
+!insert (b1,s1) into has
+!create s2:Square
+!set s2.column:= Column::c
+!set s2.row := Row::one
+!set s2.shade := Shade::Red
+!insert (b1,s2) into has
+!create pie2:Piece
+!set pie2.colour := Colour::Red
+!set pie2.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern2:MovePattern
+!set pattern2.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie2,pattern2) into movesLike
+!insert (s2,pie2) into pieceLocation
+!create s3:Square
+!set s3.column:= Column::d
+!set s3.row := Row::one
+!set s3.shade := Shade::White
+!insert (b1,s3) into has
+!create s4:Square
+!set s4.column:= Column::e
+!set s4.row := Row::one
+!set s4.shade := Shade::Red
+!insert (b1,s4) into has
+!create pie3:Piece
+!set pie3.colour := Colour::Red
+!set pie3.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern3:MovePattern
+!set pattern3.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie3,pattern3) into movesLike
+!insert (s4,pie3) into pieceLocation
+!create s5:Square
+!set s5.column:= Column::f
+!set s5.row := Row::one
+!set s5.shade := Shade::White
+!insert (b1,s5) into has
+!create s6:Square
+!set s6.column:= Column::g
+!set s6.row := Row::one
+!set s6.shade := Shade::Red
+!insert (b1,s6) into has
+!create pie4:Piece
+!set pie4.colour := Colour::Red
+!set pie4.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern4:MovePattern
+!set pattern4.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie4,pattern4) into movesLike
+!insert (s6,pie4) into pieceLocation
+!create s7:Square
+!set s7.column:= Column::h
+!set s7.row := Row::one
+!set s7.shade := Shade::White
+!insert (b1,s7) into has
+!create s8:Square
+!set s8.column:= Column::a
+!set s8.row := Row::two
+!set s8.shade := Shade::Red
+!insert (b1,s8) into has
+!create pie5:Piece
+!set pie5.colour := Colour::Red
+!set pie5.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern5:MovePattern
+!set pattern5.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie5,pattern5) into movesLike
+!insert (s8,pie5) into pieceLocation
+!create s9:Square
+!set s9.column:= Column::b
+!set s9.row := Row::two
+!set s9.shade := Shade::White
+!insert (b1,s9) into has
+!create s10:Square
+!set s10.column:= Column::c
+!set s10.row := Row::two
+!set s10.shade := Shade::Red
+!insert (b1,s10) into has
+!create pie6:Piece
+!set pie6.colour := Colour::Red
+!set pie6.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern6:MovePattern
+!set pattern6.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie6,pattern6) into movesLike
+!insert (s10,pie6) into pieceLocation
+!create s11:Square
+!set s11.column:= Column::d
+!set s11.row := Row::two
+!set s11.shade := Shade::White
+!insert (b1,s11) into has
+!create s12:Square
+!set s12.column:= Column::e
+!set s12.row := Row::two
+!set s12.shade := Shade::Red
+!insert (b1,s12) into has
+!create pie7:Piece
+!set pie7.colour := Colour::Red
+!set pie7.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern7:MovePattern
+!set pattern7.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie7,pattern7) into movesLike
+!insert (s12,pie7) into pieceLocation
+!create s13:Square
+!set s13.column:= Column::f
+!set s13.row := Row::two
+!set s13.shade := Shade::White
+!insert (b1,s13) into has
+!create s14:Square
+!set s14.column:= Column::g
+!set s14.row := Row::two
+!set s14.shade := Shade::Red
+!insert (b1,s14) into has
+!create pie8:Piece
+!set pie8.colour := Colour::Red
+!set pie8.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern8:MovePattern
+!set pattern8.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie8,pattern8) into movesLike
+!insert (s14,pie8) into pieceLocation
+!create s15:Square
+!set s15.column:= Column::h
+!set s15.row := Row::two
+!set s15.shade := Shade::White
+!insert (b1,s15) into has
+!create s16:Square
+!set s16.column:= Column::a
+!set s16.row := Row::three
+!set s16.shade := Shade::Red
+!insert (b1,s16) into has
+!create pie9:Piece
+!set pie9.colour := Colour::Red
+!set pie9.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern9:MovePattern
+!set pattern9.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie9,pattern9) into movesLike
+!insert (s16,pie9) into pieceLocation
+!create s17:Square
+!set s17.column:= Column::b
+!set s17.row := Row::three
+!set s17.shade := Shade::White
+!insert (b1,s17) into has
+!create s18:Square
+!set s18.column:= Column::c
+!set s18.row := Row::three
+!set s18.shade := Shade::Red
+!insert (b1,s18) into has
+!create pie10:Piece
+!set pie10.colour := Colour::Red
+!set pie10.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern10:MovePattern
+!set pattern10.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie10,pattern10) into movesLike
+!insert (s18,pie10) into pieceLocation
+!create s19:Square
+!set s19.column:= Column::d
+!set s19.row := Row::three
+!set s19.shade := Shade::White
+!insert (b1,s19) into has
+!create s20:Square
+!set s20.column:= Column::e
+!set s20.row := Row::three
+!set s20.shade := Shade::Red
+!insert (b1,s20) into has
+!create pie11:Piece
+!set pie11.colour := Colour::Red
+!set pie11.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern11:MovePattern
+!set pattern11.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie11,pattern11) into movesLike
+!insert (s20,pie11) into pieceLocation
+!create s21:Square
+!set s21.column:= Column::f
+!set s21.row := Row::three
+!set s21.shade := Shade::White
+!insert (b1,s21) into has
+!create s22:Square
+!set s22.column:= Column::g
+!set s22.row := Row::three
+!set s22.shade := Shade::Red
+!insert (b1,s22) into has
+!create pie12:Piece
+!set pie12.colour := Colour::Red
+!set pie12.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern12:MovePattern
+!set pattern12.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie12,pattern12) into movesLike
+!insert (s22,pie12) into pieceLocation
+!create s23:Square
+!set s23.column:= Column::h
+!set s23.row := Row::three
+!set s23.shade := Shade::White
+!insert (b1,s23) into has
+!create s24:Square
+!set s24.column:= Column::a
+!set s24.row := Row::four
+!set s24.shade := Shade::Red
+!insert (b1,s24) into has
+!create s25:Square
+!set s25.column:= Column::b
+!set s25.row := Row::four
+!set s25.shade := Shade::White
+!insert (b1,s25) into has
+!create s26:Square
+!set s26.column:= Column::c
+!set s26.row := Row::four
+!set s26.shade := Shade::Red
+!insert (b1,s26) into has
+!create s27:Square
+!set s27.column:= Column::d
+!set s27.row := Row::four
+!set s27.shade := Shade::White
+!insert (b1,s27) into has
+!create s28:Square
+!set s28.column:= Column::e
+!set s28.row := Row::four
+!set s28.shade := Shade::Red
+!insert (b1,s28) into has
+!create s29:Square
+!set s29.column:= Column::f
+!set s29.row := Row::four
+!set s29.shade := Shade::White
+!insert (b1,s29) into has
+!create s30:Square
+!set s30.column:= Column::g
+!set s30.row := Row::four
+!set s30.shade := Shade::Red
+!insert (b1,s30) into has
+!create s31:Square
+!set s31.column:= Column::h
+!set s31.row := Row::four
+!set s31.shade := Shade::White
+!insert (b1,s31) into has
+!create s32:Square
+!set s32.column:= Column::a
+!set s32.row := Row::five
+!set s32.shade := Shade::Red
+!insert (b1,s32) into has
+!create s33:Square
+!set s33.column:= Column::b
+!set s33.row := Row::five
+!set s33.shade := Shade::White
+!insert (b1,s33) into has
+!create s34:Square
+!set s34.column:= Column::c
+!set s34.row := Row::five
+!set s34.shade := Shade::Red
+!insert (b1,s34) into has
+!create s35:Square
+!set s35.column:= Column::d
+!set s35.row := Row::five
+!set s35.shade := Shade::White
+!insert (b1,s35) into has
+!create s36:Square
+!set s36.column:= Column::e
+!set s36.row := Row::five
+!set s36.shade := Shade::Red
+!insert (b1,s36) into has
+!create s37:Square
+!set s37.column:= Column::f
+!set s37.row := Row::five
+!set s37.shade := Shade::White
+!insert (b1,s37) into has
+!create s38:Square
+!set s38.column:= Column::g
+!set s38.row := Row::five
+!set s38.shade := Shade::Red
+!insert (b1,s38) into has
+!create s39:Square
+!set s39.column:= Column::h
+!set s39.row := Row::five
+!set s39.shade := Shade::White
+!insert (b1,s39) into has
+!create s40:Square
+!set s40.column:= Column::a
+!set s40.row := Row::six
+!set s40.shade := Shade::Red
+!insert (b1,s40) into has
+!create pie13:Piece
+!set pie13.colour := Colour::Red
+!set pie13.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern13:MovePattern
+!set pattern13.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie13,pattern13) into movesLike
+!insert (s40,pie13) into pieceLocation
+!create s41:Square
+!set s41.column:= Column::b
+!set s41.row := Row::six
+!set s41.shade := Shade::White
+!insert (b1,s41) into has
+!create s42:Square
+!set s42.column:= Column::c
+!set s42.row := Row::six
+!set s42.shade := Shade::Red
+!insert (b1,s42) into has
+!create pie14:Piece
+!set pie14.colour := Colour::Red
+!set pie14.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern14:MovePattern
+!set pattern14.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie14,pattern14) into movesLike
+!insert (s42,pie14) into pieceLocation
+!create s43:Square
+!set s43.column:= Column::d
+!set s43.row := Row::six
+!set s43.shade := Shade::White
+!insert (b1,s43) into has
+!create s44:Square
+!set s44.column:= Column::e
+!set s44.row := Row::six
+!set s44.shade := Shade::Red
+!insert (b1,s44) into has
+!create pie15:Piece
+!set pie15.colour := Colour::Red
+!set pie15.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern15:MovePattern
+!set pattern15.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie15,pattern15) into movesLike
+!insert (s44,pie15) into pieceLocation
+!create s45:Square
+!set s45.column:= Column::f
+!set s45.row := Row::six
+!set s45.shade := Shade::White
+!insert (b1,s45) into has
+!create s46:Square
+!set s46.column:= Column::g
+!set s46.row := Row::six
+!set s46.shade := Shade::Red
+!insert (b1,s46) into has
+!create pie16:Piece
+!set pie16.colour := Colour::Red
+!set pie16.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern16:MovePattern
+!set pattern16.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie16,pattern16) into movesLike
+!insert (s46,pie16) into pieceLocation
+!create s47:Square
+!set s47.column:= Column::h
+!set s47.row := Row::six
+!set s47.shade := Shade::White
+!insert (b1,s47) into has
+!create s48:Square
+!set s48.column:= Column::a
+!set s48.row := Row::seven
+!set s48.shade := Shade::Red
+!insert (b1,s48) into has
+!create pie17:Piece
+!set pie17.colour := Colour::Red
+!set pie17.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern17:MovePattern
+!set pattern17.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie17,pattern17) into movesLike
+!insert (s48,pie17) into pieceLocation
+!create s49:Square
+!set s49.column:= Column::b
+!set s49.row := Row::seven
+!set s49.shade := Shade::White
+!insert (b1,s49) into has
+!create s50:Square
+!set s50.column:= Column::c
+!set s50.row := Row::seven
+!set s50.shade := Shade::Red
+!insert (b1,s50) into has
+!create pie18:Piece
+!set pie18.colour := Colour::Red
+!set pie18.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern18:MovePattern
+!set pattern18.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie18,pattern18) into movesLike
+!insert (s50,pie18) into pieceLocation
+!create s51:Square
+!set s51.column:= Column::d
+!set s51.row := Row::seven
+!set s51.shade := Shade::White
+!insert (b1,s51) into has
+!create s52:Square
+!set s52.column:= Column::e
+!set s52.row := Row::seven
+!set s52.shade := Shade::Red
+!insert (b1,s52) into has
+!create pie19:Piece
+!set pie19.colour := Colour::Red
+!set pie19.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern19:MovePattern
+!set pattern19.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie19,pattern19) into movesLike
+!insert (s52,pie19) into pieceLocation
+!create s53:Square
+!set s53.column:= Column::f
+!set s53.row := Row::seven
+!set s53.shade := Shade::White
+!insert (b1,s53) into has
+!create s54:Square
+!set s54.column:= Column::g
+!set s54.row := Row::seven
+!set s54.shade := Shade::Red
+!insert (b1,s54) into has
+!create pie20:Piece
+!set pie20.colour := Colour::Red
+!set pie20.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern20:MovePattern
+!set pattern20.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie20,pattern20) into movesLike
+!insert (s54,pie20) into pieceLocation
+!create s55:Square
+!set s55.column:= Column::h
+!set s55.row := Row::seven
+!set s55.shade := Shade::White
+!insert (b1,s55) into has
+!create s56:Square
+!set s56.column:= Column::a
+!set s56.row := Row::eight
+!set s56.shade := Shade::Red
+!insert (b1,s56) into has
+!create pie21:Piece
+!set pie21.colour := Colour::Red
+!set pie21.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern21:MovePattern
+!set pattern21.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie21,pattern21) into movesLike
+!insert (s56,pie21) into pieceLocation
+!create s57:Square
+!set s57.column:= Column::b
+!set s57.row := Row::eight
+!set s57.shade := Shade::White
+!insert (b1,s57) into has
+!create s58:Square
+!set s58.column:= Column::c
+!set s58.row := Row::eight
+!set s58.shade := Shade::Red
+!insert (b1,s58) into has
+!create pie22:Piece
+!set pie22.colour := Colour::Red
+!set pie22.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern22:MovePattern
+!set pattern22.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie22,pattern22) into movesLike
+!insert (s58,pie22) into pieceLocation
+!create s59:Square
+!set s59.column:= Column::d
+!set s59.row := Row::eight
+!set s59.shade := Shade::White
+!insert (b1,s59) into has
+!create s60:Square
+!set s60.column:= Column::e
+!set s60.row := Row::eight
+!set s60.shade := Shade::Red
+!insert (b1,s60) into has
+!create pie23:Piece
+!set pie23.colour := Colour::Red
+!set pie23.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern23:MovePattern
+!set pattern23.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie23,pattern23) into movesLike
+!insert (s60,pie23) into pieceLocation
+!create s61:Square
+!set s61.column:= Column::f
+!set s61.row := Row::eight
+!set s61.shade := Shade::White
+!insert (b1,s61) into has
+!create s62:Square
+!set s62.column:= Column::g
+!set s62.row := Row::eight
+!set s62.shade := Shade::Red
+!insert (b1,s62) into has
+!create pie24:Piece
+!set pie24.colour := Colour::Red
+!set pie24.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!create pattern24:MovePattern
+!set pattern24.patternType := Pattern::OneOrTwoSquareDiagonallyForward
+!insert (pie24,pattern24) into movesLike
+!insert (s62,pie24) into pieceLocation
+!create s63:Square
+!set s63.column:= Column::h
+!set s63.row := Row::eight
+!set s63.shade := Shade::White
+!insert (b1,s63) into has
+
+
+!set res1.player := Colour::Red
+!set res2.player := Colour::White
+!set g1.gameStatus := GameStatus::Finished
+
