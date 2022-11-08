@@ -1,0 +1,10 @@
+Before:
+We see the registered user John with the username JBrown with hispreferences UserSearch Preference to Everyone
+meaning that anyone on the platform can enter his username and find him
+
+After
+
+John has updated his preference where we see that is now only will allow Friends Of Friends users with an accepted friend request
+from anyone john has been accepted or accepted himself will be able to search for him on the platform 
+the preferences can also be set to  Friends meaning that either no one will be able to find him on the platform 
+or No one

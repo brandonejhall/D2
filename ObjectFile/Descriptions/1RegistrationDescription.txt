@@ -1,0 +1,13 @@
+Registration Before 
+Here there is only the checkers blitz object with any users registered
+
+
+After Registration:
+
+The user is now registered where they have entered their name,age ,id ,username and email.There id and username was found to be unique so their registration was accepted 
+the user was automatically given certain prefeences as seen where everyone is able access them on the platform
+
+The user selects their region as NA North America
+
+A record is also generated for the user automatically and is set to 0
+

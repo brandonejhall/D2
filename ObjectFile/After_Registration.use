@@ -1,20 +1,24 @@
 !create CB:CheckersBlitz
 
+!create u1:User
+
+!create p1:Preference
+!create r1:Region
+!create rec1:Record
+
 !set u1.name := 'John'
 !set u1.userName := 'JBrown'    
 !set u1.age := 16
 !set u1.email := 'jbrown@gmail.com'
 !set u1.password := 'password1#'
 
-!insert (CB,u1) into joins
-
-
-!create p1:Preference
-!create r1:Region
-
-
 !set r1.identity := RegionIdentity::NA
 
+!insert (CB,u1) into joins
 
 !insert (u1,p1) into sets
 !insert (u1,r1) into regionSelect
+
+
+!insert (u1,rec1) into RecordUpdate
+

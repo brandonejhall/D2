@@ -1,0 +1,9 @@
+Before Update Status
+
+The user which joined the platform originally has now decided to update their staus from Available to DoNotDisturb
+
+This setting would stop any user from sending them game invites and friend requests
+
+This setting can also be set to FriendsOnly which would only allow friends to send game invites
+
+The prior seting of everyone allowed anyone to send game invites or send friend requests

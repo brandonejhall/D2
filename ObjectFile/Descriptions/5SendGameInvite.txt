@@ -1,0 +1,6 @@
+Before: Two User object are registered on the platform where they have already entered their data have 
+been initialised with a record of 0 and Preferences allowing everyone to interact with them
+
+After: object u1 which is John is sending a game invite to object u2 which is user Joan in an attempt to start the match the date is recorded on the 
+invite with a2 minute time slot based off the dateTiem object t1. When the gi1 game invite object is created
+it is initialised with a status of awaiting response and a time of 2 minutes in order to give the recipitant time to respond.

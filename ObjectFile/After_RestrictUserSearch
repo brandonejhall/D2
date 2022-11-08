@@ -1,5 +1,4 @@
 !create CB:CheckersBlitz
-
 !create u1:User
 
 !create p1:Preference
@@ -21,3 +20,6 @@
 
 
 !insert (u1,rec1) into RecordUpdate
+!create p11:Preference
+!set p11.preferences := Tuple{searchPreference: SearchPreference::FriendsOfFriends,userStatus: UserStatus::Available}
+!insert (p1,p11) into changesTo

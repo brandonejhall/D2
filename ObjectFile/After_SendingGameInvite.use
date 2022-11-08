@@ -1,0 +1,55 @@
+!create CB:CheckersBlitz
+!create u1:User
+!create u2:User
+
+!create p1:Preference
+!create r1:Region
+!create rec1:Record
+
+!create p2:Preference
+!create r2:Region
+!create rec2:Record
+
+
+!set u1.name := 'John'
+!set u1.userName := 'JBrown'    
+!set u1.age := 16
+!set u1.email := 'jbrown@gmail.com'
+!set u1.password := 'password1#'
+
+
+!set u2.name := 'Joan'
+!set u2.userName := 'JJBrown'    
+!set u2.age := 15
+!set u2.email := 'jjbrown@gmail.com'
+!set u2.password := 'Password3#'
+
+!set r1.identity := RegionIdentity::NA
+!set r2.identity := RegionIdentity::NA
+!insert (CB,u1) into joins
+!insert (CB,u2) into joins
+
+!insert (u1,p1) into sets
+!insert (u1,r1) into regionSelect
+
+!insert (u2,p2) into sets
+!insert (u2,r2) into regionSelect
+
+
+!insert (u1,rec1) into RecordUpdate
+
+!insert (u2,rec2) into RecordUpdate
+
+!create gi1: GameInvite
+!set gi1.inviteSatus := InviteStatus::AwaitingResponse
+!create t1:DateTime   
+!set t1.hour := 0
+!set t1.second := 0
+!set t1.minute := 2
+!set t1.day := 5
+!set t1.month := 11
+!set t1.year :=2022
+!set gi1.Timer := t1
+
+!insert (u1,gi1) into sendGameInvite
+!insert (u2,gi1) into receiveGameInvite

@@ -1,0 +1,3 @@
+Before : The user game invite object gi1 is currently awaiting a response from the reciving user u2 or Joan
+
+After : u2 object 'Joan' accepts the invite which ten creates a game object followed by a board object the an invited game link is created from the gi1 object to the g1 object the g1 object leads to a board object a then all the pieces and squares objects needed to start a game 

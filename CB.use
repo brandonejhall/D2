@@ -105,7 +105,6 @@ attributes
    age: Integer
    email: String
    password: String
-   record: Integer derived: 0
 end
 
 class Game < Subject
@@ -195,10 +194,10 @@ class MovePattern
         patternType: Pattern
 end
 
-association userRecordArrangement
+association RecordUpdate
     between 
     User[1] role users
-    Record[1] role leaderboard
+    Record[1] role record
 end
 
 class Square
@@ -415,6 +414,12 @@ association observes
     between
     Observer[*] role observer
     Subject[*] role subject
+end
+
+association chnageBlockStatusTo
+    between
+    Blocked[1] role currStatus
+    Blocked[0..1] role newStatus
 end
 
 

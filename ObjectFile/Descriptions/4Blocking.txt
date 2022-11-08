@@ -1,0 +1,3 @@
+Before Blocking: So a new user, Joan is  now registered along with John currently neither of these users have one another blocked.A block object is created where the isBlocked Boolean is always false at initialisation
+
+After Blocking: John Decides He wants to block Joan because he does not want to have any contact with her the is Blocked will becoem true signifying Joan is Blocked by John and there is no way in which she can interact with him on the platform
