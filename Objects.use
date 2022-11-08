@@ -301,6 +301,8 @@
 !set g1.Draw := false
 
 !insert (gi1,g1) into createsInvitedgame
+!insert (u1,g1) into Result
+!insert (u2,g1) into Result
 
 !insert (g1,b1)  into initialise
 

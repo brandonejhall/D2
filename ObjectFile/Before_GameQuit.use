@@ -73,8 +73,9 @@
 
 !insert (l1,g1) into observes
 
-!insert (u1,g1) into Result
-!insert (u1,g1) into Result
+
+!create res1: Result between (u1,g1)
+!create res2: Result between (u2,g1)
 
 !insert (l1,rec1) into UserArrangement
 !insert (l1,rec2) into UserArrangement
@@ -569,4 +570,3 @@
 !set s63.row := Row::eight
 !set s63.shade := Shade::White
 !insert (b1,s63) into has
-
