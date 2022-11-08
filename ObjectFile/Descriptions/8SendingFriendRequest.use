@@ -1,0 +1,7 @@
+Before: u1 and u2 objects representing users have been registered with their entered information both 
+objects are given preferences which are currently set to be unrestricted and this object will display 
+how relationships are formed on the platforms where a user will send a request to another user.
+
+
+After After a resquest is sent a request object is created where the request status is currently waiting for a repsonse for a user with a time 
+attached incase it is reject the sending user would have to wit a week before sending another request

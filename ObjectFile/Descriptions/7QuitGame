@@ -1,0 +1,6 @@
+Before: All the game objects have been initalised through an accepted game invite from object u1 to u2 or Jack and Joan the game has started 
+however the game can quickly be cancelled by either of the users quitting which would be displayed on the result
+
+
+After: After the object u1 'Jack' has decided to quit the game the result object which is connect to u1 and g1 will display quitGame as true
+and the result object of u2 will display isWinner true which signifies that u1 quit so u2 is declared winner of the game 
